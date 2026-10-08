@@ -1,0 +1,21 @@
+{
+  "tool": "Built-in ImageGen",
+  "created": "2026-10-01",
+  "prompts": [
+    {
+      "id": "alpine",
+      "path": "assets/backgrounds/alpine.jpg",
+      "prompt": "Use case: photorealistic-natural\nAsset type: fullscreen scenic wallpaper for Sebams new-tab dashboard\nPrimary request: A breathtaking calm alpine lake in a mountain valley, still turquoise water and rugged peaks, sparse pine trees on the edges, early morning mist and warm sunrise grazing the peaks.\nStyle/medium: high-end landscape photography, natural textures, realistic scenery.\nComposition/framing: landscape 16:9, expansive quiet middle area for a large white clock overlay, horizon around the upper third, lake across the lower half.\nLighting/mood: serene, airy, gentle golden dawn.\nConstraints: no people, buildings, text, logos, UI or watermark."
+    },
+    {
+      "id": "coast",
+      "path": "assets/backgrounds/coast.jpg",
+      "prompt": "Use case: photorealistic-natural\nAsset type: fullscreen scenic wallpaper for Sebams new-tab dashboard\nPrimary request: A serene rugged ocean coast, dramatic sea cliffs and a secluded beach, softly breaking waves, pale sunlight through coastal haze.\nStyle/medium: elegant realistic landscape photography.\nComposition/framing: landscape 16:9, wide panoramic view, expansive quiet middle area for a large white clock overlay.\nLighting/mood: peaceful muted blue-green ocean and softly warm late-afternoon sky.\nConstraints: no people, buildings, text, logos, UI or watermark."
+    },
+    {
+      "id": "forest",
+      "path": "assets/backgrounds/forest.jpg",
+      "prompt": "Use case: photorealistic-natural\nAsset type: fullscreen scenic wallpaper for Sebams new-tab dashboard\nPrimary request: A peaceful ancient forest, tall evergreen trees, softly layered mist and gentle rays of morning sunlight, rich natural moss and fern textures.\nStyle/medium: realistic high-end landscape photography.\nComposition/framing: landscape 16:9, wide view with quiet mist-filled central negative space for a large white clock overlay.\nLighting/mood: calming lush deep green with soft warm light.\nConstraints: no people, buildings, text, logos, UI or watermark."
+    }
+  ]
+}
