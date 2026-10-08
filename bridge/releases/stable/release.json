@@ -1,0 +1,218 @@
+{
+  "format": "sebams-local-release",
+  "version": "1.8.0",
+  "notes": "Opening task reminders with a configurable lead time and reference hour, snooze and completion; shared GitHub Releases update source for independent computers.",
+  "publishedAt": "2026-10-08T23:23:49.961Z",
+  "files": [
+    {
+      "path": "app.js",
+      "size": 97685,
+      "sha256": "cb275b49ae1039bc2b4605aab08fc408a9feb552f395a316cba1aaad1b067661"
+    },
+    {
+      "path": "ASSETS.md",
+      "size": 2767,
+      "sha256": "adc2b80a882a16c6222d5427a367d6d93f79825759f90f10610c7c50eafd8e05"
+    },
+    {
+      "path": "assets/backgrounds/alpine.jpg",
+      "size": 285496,
+      "sha256": "2a3647df4c72169944e4351d66c5e0280a30414e85ede225ffa54767b83c4706"
+    },
+    {
+      "path": "assets/backgrounds/coast.jpg",
+      "size": 336663,
+      "sha256": "cd076e2adac489a80b6e008293b4b7d0e758a2943725ea5390f4785d10753053"
+    },
+    {
+      "path": "assets/backgrounds/forest.jpg",
+      "size": 414368,
+      "sha256": "a765b6e634b2771fcb7af4eaf3f46ca234e414376d8b1efc3720598e3cca67c6"
+    },
+    {
+      "path": "assets/icons/icon128.png",
+      "size": 4310,
+      "sha256": "1d799834b765e9d41ba5f0388c4afa94359eece100fc52687efa366fa5f2317d"
+    },
+    {
+      "path": "assets/icons/icon16.png",
+      "size": 593,
+      "sha256": "b847faba999b86b319e204c0b273f6e401850c651237255306c07211dbfcaace"
+    },
+    {
+      "path": "assets/icons/icon32.png",
+      "size": 1125,
+      "sha256": "a2a7792115a6e9b4388acb3e4b60e37599bdc20bf16040d272309594f432316a"
+    },
+    {
+      "path": "assets/icons/icon48.png",
+      "size": 1655,
+      "sha256": "40f9326fba4db8198dcb7771aaa47c15825d40a5d6278826a85cf3bdbcb3d925"
+    },
+    {
+      "path": "assets/image-prompts.json",
+      "size": 2192,
+      "sha256": "32d4405a8e10d89c1de901a6646de894a30be9114f1c16723dbb77b4ea7088b6"
+    },
+    {
+      "path": "assets/logo.svg",
+      "size": 506,
+      "sha256": "2fe27ec44f3fe14f9d822b28b3b329cf1fe009384a3355841dd459f6897a9dea"
+    },
+    {
+      "path": "assets/site-icon.svg",
+      "size": 224,
+      "sha256": "239d6f7590ff9962339efbb54e1d2dbdc84963e0eb1138bbce0604ce29190113"
+    },
+    {
+      "path": "GUIA-1.6.md",
+      "size": 4287,
+      "sha256": "646bbe57a7830a568580020e3ed04b8730d7c454ce25ceadcb2fab7a3bcad734"
+    },
+    {
+      "path": "GUIA-1.7.md",
+      "size": 2319,
+      "sha256": "56b03597b97dc8a55c2038140a36898b0ae2a7da76f0c16cb2e5ff4042a646a4"
+    },
+    {
+      "path": "GUIA-1.8.md",
+      "size": 4291,
+      "sha256": "b1bc1a9e37e802572c4dc05cbcf47ad2c797cba6869a03ec3fd7e099f3cd9cb4"
+    },
+    {
+      "path": "lib/ai.js",
+      "size": 3003,
+      "sha256": "1f94fa41144560db36a97a8720750998540dbef9f76f6e8d24d012e1804ed097"
+    },
+    {
+      "path": "lib/bridge-sync.js",
+      "size": 848,
+      "sha256": "b4edc2814403fa648a53074a83ebf41b3451b93f2a3761dc3407cf5a997425d9"
+    },
+    {
+      "path": "lib/capture.js",
+      "size": 518,
+      "sha256": "925b7352a3ec30097f32af5e0b3fa251c9752bf170c019c4fd9abd0d6be87d0b"
+    },
+    {
+      "path": "lib/content.js",
+      "size": 1277,
+      "sha256": "5310ba5f4da07b1e0bfe29fa71e7e424415200ac1d5197a89e1c792cd1edb150"
+    },
+    {
+      "path": "lib/favicons.js",
+      "size": 595,
+      "sha256": "2f720ce6e5d18855a874b44bb522c6bca67ee7f202cd00020b4a4ee088e9ce5a"
+    },
+    {
+      "path": "lib/model.js",
+      "size": 17910,
+      "sha256": "6f492d2f5cd472dbae668e043a26ba0209c22f5b466e07840b84a6cb7277f7f6"
+    },
+    {
+      "path": "lib/palette.js",
+      "size": 3369,
+      "sha256": "0029ba8521bd23433b57184a533acb468ced883710fd398c7ad647fc1795ce1a"
+    },
+    {
+      "path": "lib/photos.js",
+      "size": 4574,
+      "sha256": "0945b5d0d4f2374b89fe67865b778f291af4cdd95fbb1f32d08bddb115a2cd21"
+    },
+    {
+      "path": "lib/planner.js",
+      "size": 6896,
+      "sha256": "167f60b1aa694521a7414e32ab5c815e6c2be4d0af1d99020a74957095d3e8ad"
+    },
+    {
+      "path": "lib/reminder-ui.js",
+      "size": 3315,
+      "sha256": "91443f6649f3d62a47f099474b9f86b9cfd9c14414fd0070ff1b037d8caedae5"
+    },
+    {
+      "path": "lib/reminders.js",
+      "size": 1212,
+      "sha256": "06bab502f97225d449d76d9286bd14520dbba33d584344bcb1f18f651d57503a"
+    },
+    {
+      "path": "lib/sortable.js",
+      "size": 3353,
+      "sha256": "3d5461bb10b1f632e39f8c7addc5d45578732f07712c447fc2ed4c031c36de89"
+    },
+    {
+      "path": "lib/store.js",
+      "size": 18912,
+      "sha256": "a49974e1d4b80ccae0abc50621d92bf62ef6109c8cfa4a174e3135db968980f8"
+    },
+    {
+      "path": "lib/task-tools-ui.js",
+      "size": 15256,
+      "sha256": "03bdea3b76ee17bd6e7a222c612b9cb4d7a41fbe04773b839f976415f77b7022"
+    },
+    {
+      "path": "lib/tasks.js",
+      "size": 801,
+      "sha256": "c5f41e4db6056a4426e0734f68000d0fc639fff4ab225348ae0e49777767b719"
+    },
+    {
+      "path": "lib/timer.js",
+      "size": 1110,
+      "sha256": "7070d022477c3f7d08e4918f31e3d498b0a4257107365472891dd9289c42aa06"
+    },
+    {
+      "path": "lib/ui.js",
+      "size": 2141,
+      "sha256": "95218b3df11a124afc117140798f1744894bc5adcae92ad6c07e0f620d699c4e"
+    },
+    {
+      "path": "lib/updates.js",
+      "size": 2165,
+      "sha256": "4677382c1b9c4d2e9316f33a65c9d1626606fc8d59f0d5f6a3af025be28c22ef"
+    },
+    {
+      "path": "lib/weather.js",
+      "size": 3603,
+      "sha256": "4d79234fed4139639aba48dac064b21854eb4c3bc80b250a28c30676c1d29783"
+    },
+    {
+      "path": "LICENSE",
+      "size": 1228,
+      "sha256": "b130fdd416d5f94f896d25d15fc20dfbffdf827effbce12d3956ca29dcae7c83"
+    },
+    {
+      "path": "manifest.json",
+      "size": 1453,
+      "sha256": "bb9afca08c4969ac36f79321111e1e8d4a6250a71d3c8406d04e68e3ef5b6920"
+    },
+    {
+      "path": "newtab.html",
+      "size": 9136,
+      "sha256": "8c1e8126e0754438e35ef8805a9166cfe229e84baf196bd82ad7beb84f84fcd1"
+    },
+    {
+      "path": "PRIVACY.md",
+      "size": 11427,
+      "sha256": "8108e5e6293ecb4a88b50ff0b54095e18a9da74c1da9a7f06be1b7773977562b"
+    },
+    {
+      "path": "README.md",
+      "size": 15224,
+      "sha256": "38b668ba15984b8426ce0196b0db44ea958e1eeaf9250e4b52cfacdc235c42af"
+    },
+    {
+      "path": "service-worker.js",
+      "size": 5396,
+      "sha256": "ce324e71718cfb881971639a2a198ea874b4462e9d8e5837349a5339884813ad"
+    },
+    {
+      "path": "styles.css",
+      "size": 39810,
+      "sha256": "7ae6acf763a68da0a8e54498bf7b26cdac8ea0f667b343f3b3acddb9ea48ec03"
+    },
+    {
+      "path": "VERIFY.md",
+      "size": 23421,
+      "sha256": "65afcd007eaf754c8d4c33a7613f59dc4023d55cbd47cc7820e83afced4ef77f"
+    }
+  ]
+}
