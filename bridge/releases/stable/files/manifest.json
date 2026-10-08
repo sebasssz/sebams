@@ -1,0 +1,39 @@
+{
+  "manifest_version": 3,
+  "name": "Sebams — A little space to focus",
+  "version": "1.8.0",
+  "description": "A calm new tab with scenic backgrounds, a daily focus, tasks, weather, notes, habits, and a reliable focus timer. Local by default.",
+  "minimum_chrome_version": "120",
+  "chrome_url_overrides": {
+    "newtab": "newtab.html"
+  },
+  "icons": {
+    "16": "assets/icons/icon16.png",
+    "32": "assets/icons/icon32.png",
+    "48": "assets/icons/icon48.png",
+    "128": "assets/icons/icon128.png"
+  },
+  "permissions": [
+    "alarms",
+    "geolocation",
+    "favicon",
+    "contextMenus"
+  ],
+  "optional_host_permissions": [
+    "https://api.open-meteo.com/*",
+    "https://geocoding-api.open-meteo.com/*",
+    "https://picsum.photos/*",
+    "https://fastly.picsum.photos/*",
+    "http://127.0.0.1/*"
+  ],
+  "background": {
+    "service_worker": "service-worker.js",
+    "type": "module"
+  },
+  "content_security_policy": {
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self' blob: data: https://picsum.photos https://fastly.picsum.photos https://www.google.com https://*.gstatic.com; connect-src 'self' http://127.0.0.1:8787 https://api.open-meteo.com https://geocoding-api.open-meteo.com https://picsum.photos https://fastly.picsum.photos; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+  },
+  "optional_permissions": [
+    "notifications"
+  ]
+}
