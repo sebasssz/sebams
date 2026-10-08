@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "name": "Existing version 1 disk data upgrades without losing content",
+      "status": "pass"
+    },
+    {
+      "name": "Task dates add, edit, clear, filter, complete, delete and undo",
+      "status": "pass"
+    },
+    {
+      "name": "Six new visibility switches persist separately by workspace",
+      "status": "pass"
+    },
+    {
+      "name": "Pinned links provide direct navigation, editing, unpinning and undo",
+      "status": "pass"
+    },
+    {
+      "name": "New dates and pins survive backup restoration and old backups still import",
+      "status": "pass"
+    },
+    {
+      "name": "Concurrent date edits are detected instead of overwritten",
+      "status": "pass"
+    },
+    {
+      "name": "Neutral glass panels and pinned layouts remain usable at small sizes",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

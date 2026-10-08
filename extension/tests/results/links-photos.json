@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "name": "Compact Links shows saved website icons and opens destinations directly",
+      "status": "pass"
+    },
+    {
+      "name": "Adding and managing links preserves drafts, pins, edits and removal undo",
+      "status": "pass"
+    },
+    {
+      "name": "Workspace menu and keyboard navigation keep link collections separate",
+      "status": "pass"
+    },
+    {
+      "name": "Compact and long Links menus fit narrow windows and retain a reachable close control",
+      "status": "pass"
+    },
+    {
+      "name": "Denied photo access sends no API requests and preserves the selected background",
+      "status": "pass"
+    },
+    {
+      "name": "Random API photos differ, persist, cache offline and retain the preceding scene on failure",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

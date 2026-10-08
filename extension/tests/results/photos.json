@@ -1,0 +1,37 @@
+{
+  "results": [
+    {
+      "name": "Version 2 disk data and database version 1 migrate with dates, pins, notes and uploaded bytes intact",
+      "status": "pass"
+    },
+    {
+      "name": "Online photos remain inactive and denied access makes no photo requests",
+      "status": "pass"
+    },
+    {
+      "name": "Granted photo access loads the collection, supports favorites and next-scene navigation",
+      "status": "pass"
+    },
+    {
+      "name": "Hourly and daily rotation update an already-open tab; new-tab cadence stays stable inside a tab",
+      "status": "pass"
+    },
+    {
+      "name": "Online cache is bounded, cached scenes survive offline reload, and uncached photos use a bundled scene",
+      "status": "pass"
+    },
+    {
+      "name": "Appearance sliders persist, website icons use domains, and icon-only mode retains accessible link names",
+      "status": "pass"
+    },
+    {
+      "name": "Eight vertical pins fit all four viewports and open their destinations with one click",
+      "status": "pass"
+    },
+    {
+      "name": "Backup retains photo choices and appearance, and clearing cache turns off remote photos",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

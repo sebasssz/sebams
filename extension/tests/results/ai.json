@@ -1,0 +1,37 @@
+{
+  "results": [
+    {
+      "name": "Task details and local photos work without an API key",
+      "status": "pass"
+    },
+    {
+      "name": "Connection requests access only when enabled and never stores an API key",
+      "status": "pass"
+    },
+    {
+      "name": "AI sends selected exercise and photo, saves a plain-text answer and preserves completion",
+      "status": "pass"
+    },
+    {
+      "name": "Provider setup failures retain the previous answer and allow retry",
+      "status": "pass"
+    },
+    {
+      "name": "Changing an exercise during generation never overwrites the latest task with a stale answer",
+      "status": "pass"
+    },
+    {
+      "name": "Backups restore task photos, exercise and AI answer atomically; delete undo retains photos",
+      "status": "pass"
+    },
+    {
+      "name": "ChatGPT queue keeps metadata, acknowledges saved items and deduplicates redelivery",
+      "status": "pass"
+    },
+    {
+      "name": "Detail view fits desktop and narrow screens with reachable AI and back controls",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

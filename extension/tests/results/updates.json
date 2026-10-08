@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "name": "Settings saves a shared GitHub source and preserves machine-local installation folders",
+      "status": "pass"
+    },
+    {
+      "name": "Links offers direct removal and Undo restores the shortcut and its pin",
+      "status": "pass"
+    },
+    {
+      "name": "Dragging Links changes and persists the order",
+      "status": "pass"
+    },
+    {
+      "name": "Dragging dashboard pins changes their order without visiting the URL",
+      "status": "pass"
+    },
+    {
+      "name": "Keyboard reorder works in Links and other workspaces stay unchanged",
+      "status": "pass"
+    },
+    {
+      "name": "Tasks has no sidebar footer and panels darken without blur",
+      "status": "pass"
+    },
+    {
+      "name": "Update settings check the real local release and show its version",
+      "status": "pass"
+    },
+    {
+      "name": "A changed release fails safely, saves the current task draft, and allows checking again",
+      "status": "pass"
+    },
+    {
+      "name": "Concurrent update metadata writes preserve the automatic-check preference",
+      "status": "pass"
+    },
+    {
+      "name": "Daily automatic checks use an alarm, can be disabled, and stay out of backups",
+      "status": "pass"
+    },
+    {
+      "name": "Installing updates the actual extension folder, reloads Chrome and preserves data and identity",
+      "status": "pass"
+    },
+    {
+      "name": "After reload, Check for updates reports current version",
+      "status": "pass"
+    },
+    {
+      "name": "Narrow Links layout remains inside the screen with remove controls",
+      "status": "pass"
+    },
+    {
+      "name": "No page errors",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

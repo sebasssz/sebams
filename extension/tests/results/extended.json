@@ -1,0 +1,25 @@
+{
+  "results": [
+    {
+      "name": "Uploaded image decoding, local blob rendering, image backup restoration",
+      "status": "pass"
+    },
+    {
+      "name": "Restore undo works immediately and preserves subsequent changes",
+      "status": "pass"
+    },
+    {
+      "name": "A conflicting note keeps its draft and offers a saved copy",
+      "status": "pass"
+    },
+    {
+      "name": "Cached weather is labeled with update time when access is unavailable",
+      "status": "pass"
+    },
+    {
+      "name": "An imported running timer completes with all Sebams tabs closed",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

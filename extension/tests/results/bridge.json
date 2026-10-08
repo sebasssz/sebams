@@ -1,0 +1,22 @@
+{
+  "results": [
+    {
+      "name": "MCP SDK creates a task and the real local service delivers its metadata to Chrome",
+      "status": "pass"
+    },
+    {
+      "name": "Real localhost HTTP sends task photos through the production solver and saves the answer",
+      "status": "pass"
+    },
+    {
+      "name": "Deleted imports stay deleted on redelivery, bad batches are atomic, and orphan photos survive Undo then expire",
+      "status": "pass"
+    },
+    {
+      "name": "Chrome alarm receives and acknowledges MCP tasks with every Sebams tab closed",
+      "status": "pass"
+    }
+  ],
+  "errors": [],
+  "provider": "offline mock; no real Gemini key or account connection"
+}

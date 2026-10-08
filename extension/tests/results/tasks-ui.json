@@ -1,0 +1,41 @@
+{
+  "results": [
+    {
+      "name": "Sidebar lists, active views and unfinished counts agree with stored tasks",
+      "status": "pass"
+    },
+    {
+      "name": "Creating a subject selects it, clears date filters and supports dated task move",
+      "status": "pass"
+    },
+    {
+      "name": "Rename and delete lists preserve task content, dates and undo",
+      "status": "pass"
+    },
+    {
+      "name": "Completed view removes restored tasks and adding a task makes it visible",
+      "status": "pass"
+    },
+    {
+      "name": "Date filtering, completion, deletion and undo preserve dates and sidebar counts",
+      "status": "pass"
+    },
+    {
+      "name": "A subject literally named All remains separate from the global All tasks view",
+      "status": "pass"
+    },
+    {
+      "name": "Saved subjects and tasks survive reload and remain separate by workspace",
+      "status": "pass"
+    },
+    {
+      "name": "Keyboard sidebar navigation, task edits, focus trap and Escape remain usable",
+      "status": "pass"
+    },
+    {
+      "name": "Desktop, compact screens and zoom keep the task sidebar, list and composer inside the dialog",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

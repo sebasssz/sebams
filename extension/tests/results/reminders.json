@@ -1,0 +1,57 @@
+{
+  "results": [
+    {
+      "name": "Settings save a custom anticipation, reference time and opening-reminder toggle",
+      "status": "pass"
+    },
+    {
+      "name": "Preview shows the new UI without consuming actual task reminders",
+      "status": "pass"
+    },
+    {
+      "name": "Got it dismisses that schedule across reload while retaining the unfinished task",
+      "status": "pass"
+    },
+    {
+      "name": "Changing the due date creates a fresh reminder",
+      "status": "pass"
+    },
+    {
+      "name": "Snoozed reminder returns after the stored waiting period ends",
+      "status": "pass"
+    },
+    {
+      "name": "Open task switches to its correct workspace and preserves reference photos",
+      "status": "pass"
+    },
+    {
+      "name": "Completing a repeating task from the reminder creates one successor",
+      "status": "pass"
+    },
+    {
+      "name": "Explicit reminder time overrides an overdue due date; completed tasks are excluded",
+      "status": "pass"
+    },
+    {
+      "name": "Opening reminders can be disabled without erasing task dates",
+      "status": "pass"
+    },
+    {
+      "name": "Deep links open the requested task without an interrupting reminder",
+      "status": "pass"
+    },
+    {
+      "name": "Reminder claims are atomic across tabs, expire after a closed tab and stay out of backups",
+      "status": "pass"
+    },
+    {
+      "name": "Reminder window fits small screens and uses a dark backdrop without blur",
+      "status": "pass"
+    },
+    {
+      "name": "No browser page errors",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

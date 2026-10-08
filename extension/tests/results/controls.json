@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "name": "General settings, widget visibility and provider search",
+      "status": "pass"
+    },
+    {
+      "name": "Appearance, favorite rotation, quote controls and custom quote undo",
+      "status": "pass"
+    },
+    {
+      "name": "Task lists and filtered reorder with hidden items between them",
+      "status": "pass"
+    },
+    {
+      "name": "Link folders, edit, within-folder reorder, removal undo and navigation",
+      "status": "pass"
+    },
+    {
+      "name": "Timer lengths, reset, switch, sound preference and habit undo",
+      "status": "pass"
+    },
+    {
+      "name": "Weather city selection and location failure UI with explicit test fixtures",
+      "status": "pass"
+    },
+    {
+      "name": "An open tab rotates daily scenery while keeping an unfinished goal",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

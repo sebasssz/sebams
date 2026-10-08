@@ -1,0 +1,77 @@
+{
+  "results": [
+    {
+      "name": "Task checklist supports creation, edit, completion, removal and reload",
+      "status": "pass"
+    },
+    {
+      "name": "Task estimates and elapsed tracking persist across reload and stop on completion",
+      "status": "pass"
+    },
+    {
+      "name": "Repeating task completes once and creates a clean next occurrence",
+      "status": "pass"
+    },
+    {
+      "name": "Future reminders save and use the configured lead time",
+      "status": "pass"
+    },
+    {
+      "name": "Reference photos remain local and AI defaults to hints without photos",
+      "status": "pass"
+    },
+    {
+      "name": "Task templates save a checklist and create independent tasks without photos or answers",
+      "status": "pass"
+    },
+    {
+      "name": "Templates allow editing, independent creation and deletion",
+      "status": "pass"
+    },
+    {
+      "name": "Exam planner distributes topic tasks before the exam and calendar opens sessions",
+      "status": "pass"
+    },
+    {
+      "name": "Weekly progress counts new completion dates by subject",
+      "status": "pass"
+    },
+    {
+      "name": "Command palette searches details, lists and links and supports keyboard opening",
+      "status": "pass"
+    },
+    {
+      "name": "Website capture creates Inbox task with selection and source using the actual capture handler",
+      "status": "pass"
+    },
+    {
+      "name": "Desktop notification scheduler delivers once and reschedules after edits",
+      "status": "pass"
+    },
+    {
+      "name": "Failed desktop delivery keeps its reminder pending and backs off instead of looping",
+      "status": "pass"
+    },
+    {
+      "name": "Pins support logos, names, no glass, direct removal and undo",
+      "status": "pass"
+    },
+    {
+      "name": "Renaming and deleting a subject preserves its templates and plans through undo",
+      "status": "pass"
+    },
+    {
+      "name": "Backups preserve checklists, plans, templates, dates and time without connection secrets",
+      "status": "pass"
+    },
+    {
+      "name": "New views and task details remain contained on narrow screens",
+      "status": "pass"
+    },
+    {
+      "name": "No browser page errors",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

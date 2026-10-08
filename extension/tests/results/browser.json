@@ -1,0 +1,66 @@
+{
+  "browser": "Chrome 154",
+  "results": [
+    {
+      "name": "Actual unpacked installation and new-tab override",
+      "status": "pass"
+    },
+    {
+      "name": "Onboarding and personalized greeting",
+      "status": "pass"
+    },
+    {
+      "name": "Daily focus save, edit, complete and unfinished rollover",
+      "status": "pass"
+    },
+    {
+      "name": "Tasks add, edit, priority, list, keyboard reorder, delete and undo",
+      "status": "pass"
+    },
+    {
+      "name": "Notes autosave and workspace separation",
+      "status": "pass"
+    },
+    {
+      "name": "Multiple tabs concurrent writes and live updates",
+      "status": "pass"
+    },
+    {
+      "name": "Unsafe link rejected and user text rendered safely",
+      "status": "pass"
+    },
+    {
+      "name": "Background selection, favorites and custom quotes",
+      "status": "pass"
+    },
+    {
+      "name": "Habit tracking persists",
+      "status": "pass"
+    },
+    {
+      "name": "Timer pause/resume, focus view and suspended deadline recovery",
+      "status": "pass"
+    },
+    {
+      "name": "Backup export/import round trip and rejected unsafe backup",
+      "status": "pass"
+    },
+    {
+      "name": "Offline new-tab assets and editing",
+      "status": "pass"
+    },
+    {
+      "name": "Keyboard dialog navigation and Escape return",
+      "status": "pass"
+    },
+    {
+      "name": "Responsive layouts and zoom",
+      "status": "pass"
+    },
+    {
+      "name": "Full browser restart persistence and timer recovery",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}
