@@ -1,0 +1,40 @@
+✔ task preparation asks for every unspecified field and accepts explicit no date and low priority (10.9063ms)
+✔ connection codes are generated once and persist without an API key (20.3402ms)
+✔ queue creation is atomic, survives restart and retries remain idempotent after ACK and list rename (136.9468ms)
+✔ vision requests carry the real image bytes, selected details and store:false without saving the API key (8.9937ms)
+✔ invalid image types, excessive image counts and metadata limits fail before contacting Gemini (0.9314ms)
+✔ unconfigured, incomplete, refusal and provider errors produce clear sanitized messages (2.5618ms)
+✔ concurrency limits and cancellation do not leave the solver busy (3.2293ms)
+✔ REST requires the private connection code, rejects web origins and delivers only authenticated queue operations (360.7303ms)
+✔ Guidance defaults to hints and explanations while retaining free-tier and privacy request settings (0.8606ms)
+✔ Free quota errors make only one Gemini request and never fall back to another provider (0.5833ms)
+✔ Only completed model output text is saved; thoughts and tool content remain excluded (2.5544ms)
+✔ Oversized inline image requests fail before uploading any image bytes (139.1409ms)
+✔ Repository URLs normalize and reject credentials, foreign hosts and unsafe names (7.685ms)
+✔ The same shared release updates two independent PCs and backs up each old version (88.0917ms)
+✔ Remote file corruption and traversal are rejected without changing the installed version (26.1551ms)
+✔ A changed GitHub release requires a fresh check before installation (26.5493ms)
+✔ Only the configured GitHub repository and approved asset CDN redirects are downloaded (5.36ms)
+✔ No release, rate limits and release tag mismatch have actionable errors (5.7273ms)
+✔ Remote duplicate names, noncanonical base64 and oversized files fail before installation (28.4965ms)
+✔ Source endpoints require pairing and cannot modify this PC’s installation paths (110.4137ms)
+✔ Official SDK client initializes HTTP MCP, asks missing fields, creates once and rejects incomplete creation (284.5247ms)
+✔ MCP authentication rejects a missing connection code before exposing tools (51.4309ms)
+✔ MCP form elicitation gathers explicit metadata and declining never creates a task (37ms)
+✔ Official SDK stdio adapter reads the private local code and creates through the running service (1260.1504ms)
+✔ Stopping requires the private code, closes only this service and retains its pending queue (58.9194ms)
+✔ Versions compare numerically, including all four Chrome components (0.6189ms)
+✔ Local install validates release, swaps all files and retains previous version (82.6299ms)
+✔ Corrupt payload and unsafe paths never modify installed files (60.4507ms)
+✔ Changed metadata and downgrade attempts are rejected (66.0058ms)
+✔ Failed replacement rolls back the original folder and removes staging files (61.2487ms)
+✔ Parallel installs serialize and return a clear busy response (61.65ms)
+✔ Update endpoints require pairing authentication and report missing configuration honestly (45.2839ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6542.524
