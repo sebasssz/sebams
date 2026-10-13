@@ -1,0 +1,3 @@
+# Sebams private connector source
+
+These files contain the task/MCP implementation deployed in the private Sites project. To create a separate connector, start with the Sites Vinext starter, copy these application/database files, declare D1 `DB` and capability `mcp`, generate/apply the schema migrations, build and publish privately through Sites. Sites manages sign-in and provisions the personal plugin. Use the resulting Site origin in the extension’s chatgpt.js, optional host permissions, externally_connectable and CSP. This directory is an implementation overlay for that starter, not a standalone build package. No credentials, actual account identities or task data are included.

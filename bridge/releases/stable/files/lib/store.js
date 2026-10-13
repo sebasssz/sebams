@@ -1,5 +1,6 @@
 import {createTask,finalizeTasks} from './planner.js';
 import {selectReminders} from './reminders.js';
+import {projectTasks,reconcileProjection,canonical,WORKSPACES,validateRecord} from './task-sync-model.js';
 import {createDefaultState,validateState,validateBackup,upgradeState,IMAGE_TYPES,MAX_IMAGE_BYTES,MAX_TOTAL_IMAGE_BYTES,taskAttachmentMetadata} from './model.js';
 let databasePromise,cached,channel;const listeners=new Set();
 function database(){if(!databasePromise)databasePromise=new Promise((resolve,reject)=>{const req=indexedDB.open('sebams-v1',3);req.onupgradeneeded=()=>{for(const name of ['data','images','photo-cache','task-attachments','private'])if(!req.result.objectStoreNames.contains(name))req.result.createObjectStore(name);};req.onsuccess=()=>{req.result.onversionchange=()=>{req.result.close();databasePromise=null;};resolve(req.result);};req.onerror=()=>{databasePromise=null;reject(Error('Local storage is unavailable.'));};req.onblocked=()=>reject(Error('Close other Sebams tabs and try again.'));});return databasePromise;}
@@ -45,6 +46,40 @@ export async function patchUpdatePreferences(patch){
 }
 export async function setUpdatePreferences(value){if(!value||typeof value.autoCheck!=='boolean'||!Number.isFinite(value.lastCheckedAt)||value.lastCheckedAt<0||typeof value.availableVersion!=='string'||value.availableVersion.length>25)throw Error('Invalid update settings.');return patchUpdatePreferences({autoCheck:value.autoCheck,lastCheckedAt:value.lastCheckedAt,availableVersion:value.availableVersion});}
 export async function setBridgeConfig(value){if(!value||Object.keys(value).join(',')!=='token'||typeof value.token!=='string'||value.token&&(!/^[A-Za-z0-9_-]{32,128}$/.test(value.token)||value.token.startsWith('sk-')||value.token.startsWith('AIza')))throw Error('Use the Sebams Bridge connection code, not an OpenAI API key.');const db=await database(),tx=db.transaction('private','readwrite'),done=complete(tx);tx.objectStore('private').put({token:value.token},'bridge');await done;}
+
+const connectionDefaults=()=>({enabled:false,nonce:'',userId:'',lastSyncAt:0,status:'Not connected.',conflicts:[],connectionTabId:null});
+export async function getChatGPTConnection(){const db=await database(),tx=db.transaction('private','readonly'),done=complete(tx);const value=await request(tx.objectStore('private').get('chatgpt-connection'));await done;return value||connectionDefaults();}
+export async function configureChatGPTConnection({enabled,nonce='',userId,status,connectionTabId,expectedNonce}){
+  if(typeof enabled!=='boolean'||typeof nonce!=='string'||nonce.length>128||userId!==undefined&&(typeof userId!=='string'||userId.length>200)||status!==undefined&&(typeof status!=='string'||status.length>500))throw Error('Invalid ChatGPT connection.');
+  const db=await database(),tx=db.transaction('private','readwrite'),done=complete(tx),store=tx.objectStore('private');const previous=(await request(store.get('chatgpt-connection')))||connectionDefaults();if(expectedNonce!==undefined&&(!previous.enabled||previous.nonce!==expectedNonce)){await done;throw Error('The ChatGPT connection changed.');}const next={...previous,enabled,nonce,status:status??previous.status};
+  if(userId!==undefined){if(previous.userId&&previous.userId!==userId)store.delete('chatgpt-baseline');next.userId=userId;}
+  if(connectionTabId!==undefined){if(connectionTabId!==null&&(!Number.isInteger(connectionTabId)||connectionTabId<0))throw Error('Invalid connection tab.');next.connectionTabId=connectionTabId;}
+  if(!enabled)next.conflicts=[];store.put(next,'chatgpt-connection');await done;return next;
+}
+export async function setChatGPTStatus(status){const db=await database(),tx=db.transaction('private','readwrite'),done=complete(tx),store=tx.objectStore('private');const value=(await request(store.get('chatgpt-connection')))||connectionDefaults();value.status=String(status).slice(0,500);store.put(value,'chatgpt-connection');await done;return value;}
+export async function prepareChatGPTSync(){const db=await database(),tx=db.transaction(['private','data'],'readonly'),done=complete(tx);const store=tx.objectStore('private'),config=(await request(store.get('chatgpt-connection')))||connectionDefaults(),baseline=(await request(store.get('chatgpt-baseline')))||{},state=upgradeState(await request(tx.objectStore('data').get('state')));await done;return {config,baseline,current:projectTasks(state)};}
+function applyTaskValues(state,values){
+  for(const id of WORKSPACES){const metadata=values['workspace:'+id];if(metadata)state.workspaces[id].lists=[...metadata.lists];}
+  for(const [key,value] of Object.entries(values)){
+    if(!key.startsWith('task:'))continue;const [,workspace,...parts]=key.split(':'),id=parts.join(':');if(!WORKSPACES.includes(workspace))throw Error('Invalid task workspace.');const tasks=state.workspaces[workspace].tasks,index=tasks.findIndex(t=>t.id===id);
+    if(value===null){if(index>=0)tasks.splice(index,1);continue;}validateRecord(value,key);const fields={text:value.text,details:value.details,list:value.list,dueDate:value.dueDate,priority:value.priority,done:value.done};if(index>=0)Object.assign(tasks[index],fields);else tasks.push(createTask({id:value.id,...fields}));
+  }
+  for(const w of Object.values(state.workspaces))for(const task of w.tasks)if(!w.lists.includes(task.list))w.lists.push(task.list);
+}
+export async function acceptChatGPTSync(nonce,sent,result){
+  const remote=result?.snapshot;if(!remote||typeof remote.userId!=='string'||!Array.isArray(result.conflicts))throw Error('ChatGPT returned an invalid task collection.');
+  const db=await database(),tx=db.transaction(['data','private'],'readwrite'),done=complete(tx);let next,config,changed;
+  try{const store=tx.objectStore('private');config=(await request(store.get('chatgpt-connection')))||connectionDefaults();if(!config.enabled||config.nonce!==nonce||config.userId!==remote.userId)throw Error('The ChatGPT connection changed.');next=upgradeState(await request(tx.objectStore('data').get('state')));const before=structuredClone(next),current=projectTasks(next),oldBaseline=(await request(store.get('chatgpt-baseline')))||{};
+    const blocked=new Map(config.conflicts.map(c=>[c.key,c]));for(const conflict of result.conflicts){if(typeof conflict.key!=='string'||!Array.isArray(conflict.fields))throw Error('Invalid sync conflict.');blocked.set(conflict.key,{...conflict,local:current[conflict.key]??null});}
+    const merged=reconcileProjection(result.ok?sent:oldBaseline,current,remote.records);for(const conflict of merged.conflicts)blocked.set(conflict.key,conflict);for(const [key,conflict] of blocked){delete merged.values[key];conflict.local=current[key]??null;conflict.remote=merged.baseline[key]??null;}
+    applyTaskValues(next,merged.values);finalizeTasks(next,before);validateState(next);changed=canonical(next)!==canonical(before);if(changed){next.revision++;tx.objectStore('data').put(next,'state');}
+    config.conflicts=[...blocked.values()];config.lastSyncAt=Date.now();config.status=config.conflicts.length?'Some changes need your choice.':'Synced with ChatGPT.';store.put(config,'chatgpt-connection');store.put(merged.baseline,'chatgpt-baseline');
+  }catch(error){tx.abort();await done.catch(()=>{});throw error;}await done;if(changed)publish(next);return {changed,conflicts:config.conflicts.length};
+}
+export async function resolveChatGPTConflict(key,choice){
+  if(!['local','cloud'].includes(choice))throw Error('Choose which version to keep.');const db=await database(),tx=db.transaction(['data','private'],'readwrite'),done=complete(tx);let next,changed=false;
+  try{const store=tx.objectStore('private'),config=(await request(store.get('chatgpt-connection')))||connectionDefaults(),conflict=config.conflicts.find(c=>c.key===key);if(!conflict)throw Error('This change was already reviewed.');if(choice==='cloud'){next=upgradeState(await request(tx.objectStore('data').get('state')));const before=structuredClone(next);applyTaskValues(next,{[key]:conflict.remote});finalizeTasks(next,before);validateState(next);next.revision++;tx.objectStore('data').put(next,'state');changed=true;}config.conflicts=config.conflicts.filter(c=>c.key!==key);store.put(config,'chatgpt-connection');}catch(error){tx.abort();await done.catch(()=>{});throw error;}await done;if(changed)publish(next);
+}
 
 export async function reconcileBridgeTasks(tasks){
   if(!Array.isArray(tasks)||tasks.length>300)throw Error('The Bridge returned an invalid task collection.');

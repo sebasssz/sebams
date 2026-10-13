@@ -1,6 +1,6 @@
 {
   "name": "sebams",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -12,9 +12,8 @@
     "test:photos": "node tests/browser-photos.mjs",
     "test:tasks": "node tests/browser-tasks-ui.mjs",
     "test:links": "node tests/browser-links-photos.mjs",
-    "test:ai": "node tests/browser-ai.mjs",
-    "test:bridge": "node tests/browser-bridge.mjs",
-    "test:reminders": "node tests/browser-reminders.mjs"
+    "test:reminders": "node tests/browser-reminders.mjs",
+    "test:chatgpt": "node tests/browser-chatgpt.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

@@ -10,8 +10,9 @@ import { matchesTaskDate, taskDateLabel } from './lib/tasks.js';
 import { localDay, rollover, APPEARANCE_DEFAULTS } from './lib/model.js';
 import { photoURL, fetchPhotoCollection, fetchPhotoBlob, hasPhotoAccess, requestPhotoAccess, rotationIndex, chooseRandomPhoto } from './lib/photos.js';
 import { faviconURL } from './lib/favicons.js';
-import { bridgeRequest, requestBridgeAccess, hasBridgeAccess, blobDataURL, taskPrompt, normalizeAIResult } from './lib/ai.js';
-import { receiveBridgeTasks } from './lib/bridge-sync.js';
+import { bridgeRequest, requestBridgeAccess, taskPrompt } from './lib/ai.js';
+import {connectChatGPT,disconnectChatGPT,CHATGPT_ORIGIN} from './lib/chatgpt.js';
+import {getChatGPTConnection,resolveChatGPTConflict} from './lib/store.js';
 import { putTaskAttachment, getTaskAttachment, removeTaskAttachment, getBridgeConfig, setBridgeConfig, pruneTaskAttachments } from './lib/store.js';
 import { BACKGROUNDS, QUOTES, SEARCH_PROVIDERS } from './lib/content.js';
 import { searchCities, fetchWeather, weatherLabel, requestWeatherAccess, locateCity } from './lib/weather.js';
@@ -24,9 +25,9 @@ let focusEditing = false, focusOriginal = '', toastTimer, noteTimer, notesDirty 
 let photoAccess=false, photosBusy=false, photosError='', rotationSlot='', backgroundFallbackKey='';
 let linksMode='browse', linksMenu=false;
 let taskTool=null,weekOffset=0,openCommands,lastTaskSyncKey='',reminderInbox;
-let taskDetailId=null, bridgeConfig={token:''}, bridgeStatus='', bridgeBusy=false, bridgeSyncBusy=false;
+let taskDetailId=null, bridgeConfig={token:''}, bridgeStatus='', bridgeBusy=false, chatGPTConfig={enabled:false,userId:'',nonce:'',conflicts:[],lastSyncAt:0,status:'Not connected.'},chatGPTBusy=false;
 let updatePrefs={autoCheck:false,lastCheckedAt:0,availableVersion:''},updateResult=null,updateStatus='',updateBusy=false,updateSource=null,updateSourceStatus='';
-const taskDrafts=new Map(), aiRequests=new Map();
+const taskDrafts=new Map();
 const tabSeed=crypto.getRandomValues(new Uint32Array(1))[0], failedBackgrounds=new Set();
 const panel = $('panel'), body = $('panel-body');
 const workspace = () => state.workspaces[state.workspace];
@@ -37,7 +38,7 @@ const run = fn => async (...args) => {
   try { return await fn(...args); } catch (error) { if (!error.sebamsShown) toast(error.message || 'Something went wrong. Please try again.'); }
   finally { controls.forEach(([control, disabled]) => { control.disabled = disabled; }); }
 };
-const save = async fn => { const result = await mutate(fn); state = result; syncTaskAlarm(); return result; };
+const save = async fn => { const result = await mutate(fn); state = result; syncTaskAlarm(); chrome.runtime.sendMessage({type:'chatgpt-sync'}).catch(()=>{}); return result; };
 const btn = (text, fn, cls = 'secondary', attrs = {}) => el('button', { type: 'button', class: cls, onclick: run(fn), ...attrs }, text);
 const ibtn = (name, label, fn, attrs = {}) => btn(icon(name), fn, 'icon-button', { 'aria-label': label, title: label, ...attrs });
 const help = text => el('p', { class: 'help' }, text);
@@ -186,7 +187,7 @@ async function updateWeather(force = false) {
   finally { weatherBusy = false; renderWeatherSummary(); if (panelName === 'weather') renderPanel(); }
 }
 function renderSettings() {
-  body.append(el('nav', { class: 'tabs', 'aria-label': 'Settings categories' }, ['general', 'appearance', 'workspace', 'ai', 'updates', 'data'].map(tab => btn(tab==='ai'?'AI':tab[0].toUpperCase() + tab.slice(1), async () => { settingsTab = tab;if(tab==='updates'){updatePrefs=await getUpdatePreferences();await loadUpdateSource();}renderPanel(); }, settingsTab === tab ? 'selected' : '', { 'aria-pressed': settingsTab === tab }))));
+  body.append(el('nav', { class: 'tabs', 'aria-label': 'Settings categories' }, ['general', 'appearance', 'workspace', 'chatgpt', 'updates', 'data'].map(tab => btn(tab==='chatgpt'?'ChatGPT':tab[0].toUpperCase() + tab.slice(1), async () => { settingsTab = tab;if(tab==='chatgpt')chatGPTConfig=await getChatGPTConnection();if(tab==='updates'){updatePrefs=await getUpdatePreferences();await loadUpdateSource();}renderPanel(); }, settingsTab === tab ? 'selected' : '', { 'aria-pressed': settingsTab === tab }))));
   if (settingsTab === 'general') {
     body.append(el('div', { class: 'stack' }, field('What should we call you?', input(state.prefs.name, { maxlength: 60, onchange: run(e => save(s => { s.prefs.name = e.target.value.trim(); })) })), el('div', { class: 'field-grid' }, field('Clock format', select(String(state.prefs.clock24), [['false', '12-hour · 2:30 PM'], ['true', '24-hour · 14:30']], e => save(s => { s.prefs.clock24 = e.target.value === 'true'; }))), field('Search provider', select(state.prefs.searchProvider, Object.entries(SEARCH_PROVIDERS).map(([id, p]) => [id, p.label]), e => save(s => { s.prefs.searchProvider = e.target.value; }))))));
     body.append(toggle('Show the date', state.prefs.showDate, value => save(s => { s.prefs.showDate = value; })), help('Search opens your chosen provider only when you submit. Your address bar stays ready when a new tab opens.'));
@@ -200,8 +201,8 @@ function renderSettings() {
   } else if (settingsTab === 'workspace') {
     body.append(help('Each workspace remembers its own links, lists, tasks, notes, habits, and visible widgets. Your daily focus travels with you.'), el('div', { class: 'stack' }, ['personal', 'work', 'study'].map(id => btn(`${id[0].toUpperCase() + id.slice(1)}${state.workspace === id ? ' · current' : ''}`, async () => { await save(s => { s.workspace = id; }); taskList = null; taskDateFilter = 'all'; renderPanel(); }, state.workspace === id ? 'primary' : 'secondary'))));
     if (state.focusArchive.length) { body.append(el('section', { class: 'section' }, el('h3', {}, 'Past focus'), el('ul', { class: 'list' }, state.focusArchive.slice(-20).reverse().map(item => el('li', { class: 'list-item' }, el('div', { class: 'item-main' }, el('strong', {}, item.text), el('small', {}, `${item.day} · ${item.done ? 'Completed' : 'Archived'}`))))))); }
-  } else if(settingsTab==='ai') {
-    renderAISettings();
+  } else if(settingsTab==='chatgpt') {
+    renderChatGPTSettings();
   } else if(settingsTab==='updates') {
     renderUpdateSettings();
   } else {
@@ -216,7 +217,7 @@ function renderUpdateSettings(){
   if(updateResult?.needsReload)body.append(btn('Reload Sebams',async()=>{await saveBeforeUpdate();await reloadAfterUpdate();},'primary',{disabled:updateBusy}));
   else if(updateResult?.available)body.append(el('section',{class:'section stack'},el('h3',{},'What’s new'),el('p',{class:'update-notes'},updateResult.notes),btn('Install update',async()=>{await saveBeforeUpdate();updateBusy=true;updateStatus='Installing update…';renderPanel();try{const {token}=await getBridgeConfig();const result=await bridgeRequest('/updates/install',token,{body:{version:updateResult.version,fingerprint:updateResult.fingerprint},timeout:45000});if(!result?.ok||result.version!==updateResult.version)throw Error('The update did not finish. Check for updates again.');updateStatus='Installed. Reloading Sebams…';renderPanel();await reloadAfterUpdate();}catch(error){updateStatus=error.message;updateResult=null;}finally{updateBusy=false;if(panelName==='settings'&&settingsTab==='updates')renderPanel();}},'primary',{disabled:updateBusy}),help('Sebams reloads after installation. A copy of the previous extension version is kept on this PC.')));
   renderUpdateSource();
-  if(!bridgeConfig.token)body.append(btn('Connect Sebams Bridge',()=>{settingsTab='ai';renderPanel();},'secondary'));
+  renderBridgeConnectionSettings();
 }
 async function loadUpdateSource(){
   updateSource=null;updateSourceStatus='';if(!bridgeConfig.token)return;
@@ -227,7 +228,6 @@ function renderUpdateSource(){
   body.append(el('details',{class:'section disclosure',open:updateSource?.source==='github'},el('summary',{},'Release source'),help(updateSource?.source==='github'?'Shared source: '+updateSource.repository:'Current source: a release prepared on this PC. Other computers need a shared repository.'),el('form',{class:'stack',onsubmit:run(async event=>{event.preventDefault();const {token}=await getBridgeConfig();const result=await bridgeRequest('/updates/source',token,{body:{repository:repository.value},timeout:6000});updateSource=result;updateResult=null;updateStatus='';updatePrefs=await patchUpdatePreferences({lastCheckedAt:0,availableVersion:''});updateSourceStatus=result.source==='github'?'Shared source saved. Publish a release before checking for updates.':'Local release source saved.';renderPanel();})},field('Public GitHub repository',repository),el('button',{type:'submit',class:'secondary',disabled:updateBusy},'Save release source')),help('Run SetupUpdates.cmd in Bridge once on each PC and select its Sebams extension folder. Then use the same public repository here. No AI API key is needed for updates. Leave the field empty to use local releases.'),el('p',{role:'status',class:'help'},updateSourceStatus)));
 }
 async function saveBeforeUpdate(){
-  if(aiRequests.size)throw Error('Finish or cancel the active AI request before installing an update.');
   if(notesDirty)await flushNotes();
   const dirty=[...taskDrafts].filter(([,draft])=>draft.details!==draft.base);
   if(dirty.length){await save(s=>{for(const [key,draft] of dirty){const [wsid,id]=key.split('/'),task=s.workspaces[wsid]?.tasks.find(t=>t.id===id);if(!task||task.details!==draft.base)throw Error('A task changed in another tab. Review your draft before updating.');task.details=draft.details;}});for(const [,draft] of dirty)draft.base=draft.details;}
@@ -247,27 +247,17 @@ function installCommands(){
   openCommands=installPalette({state:()=>state,run,command:async name=>{if(name==='settings'){await openPanel('settings');return;}await openPanel('tasks');taskList=null;taskDateFilter='all';taskTool=name==='new'?null:name;renderPanel();if(name==='new')body.querySelector('[aria-label="New task"]').focus();},choose:async entry=>{if(entry.type==='link'){location.assign(entry.url);return;}await save(s=>{s.workspace=entry.workspace;});if(entry.type==='task')await openTaskById(entry.id);else{await openPanel('tasks');taskList=entry.id;taskTool=null;renderPanel();}}});
   $('search-commands').onclick=openCommands;
 }
-function renderAISettings(){
+function renderBridgeConnectionSettings(){
   const code=input('',{type:'password',autocomplete:'off',maxlength:128,placeholder:'Connection code from Sebams Bridge','aria-label':'Bridge connection code'});
-  body.append(el('section',{class:'ai-settings stack'},el('div',{},el('span',{class:'eyebrow'},'TASK ASSISTANT'),el('h3',{},'A little help with the hard part')),help('Attach a photo or write the full exercise, then use hints, explanations, or a study plan. Photos also work as personal references. Gemini has a free tier with quotas. Use a Google AI Studio project without billing. Google may use free-tier content to improve its products.'),el('form',{class:'add-form',onsubmit:run(async e=>{
-    e.preventDefault();const token=code.value.trim();if(token.startsWith('sk-')||token.startsWith('AIza')||! /^[A-Za-z0-9_-]{32,128}$/.test(token))throw Error('Use the connection code from Sebams Bridge. Your Gemini API key goes only in the Bridge configuration.');
-    const allowed=await requestBridgeAccess();if(!allowed)throw Error('Local connection access was declined.');
-    bridgeBusy=true;bridgeStatus='Connecting…';
-    try{const health=await bridgeRequest('/health',token,{timeout:6000});await setBridgeConfig({token});bridgeConfig={token};bridgeStatus=health.configured?'Connected · '+health.model:'Connected · add a free Gemini API key in Sebams Bridge to use AI.';await syncBridgeTasks();chrome.runtime.sendMessage({type:'bridge-sync'}).catch(()=>{});}
-    catch(error){bridgeStatus=error.message;throw error;}finally{bridgeBusy=false;if(panelName==='settings'&&settingsTab==='ai')renderPanel();}
-  })},field('Local connection code',code),el('button',{type:'submit',class:'primary',disabled:bridgeBusy},bridgeConfig.token?'Reconnect':'Connect Sebams Bridge')),el('p',{class:'bridge-status',role:'status'},bridgeStatus||(bridgeConfig.token?'Connection saved. Start Sebams Bridge to receive tasks.':'AI is optional. Photos and task details work without a connection.'))));
-  if(bridgeConfig.token)body.append(row(btn('Check connection',async()=>{bridgeBusy=true;try{const health=await bridgeRequest('/health',bridgeConfig.token,{timeout:6000});bridgeStatus=health.configured?'Connected · '+health.model:'Connected · Free Gemini API key needed in Sebams Bridge.';await syncBridgeTasks();}catch(error){bridgeStatus=error.message;throw error;}finally{bridgeBusy=false;renderPanel();}},'secondary',{disabled:bridgeBusy}),btn('Disconnect',async()=>{for(const request of aiRequests.values())request.controller.abort();await setBridgeConfig({token:''});bridgeConfig={token:''};bridgeStatus='Disconnected.';chrome.runtime.sendMessage({type:'bridge-sync'}).catch(()=>{});renderPanel();},'text-button')));
-  body.append(el('section',{class:'section'},el('h3',{},'Create tasks from ChatGPT'),help('Connect the Sebams MCP tools using the setup guide included with Sebams Bridge. The tools ask for title, priority, due date, list and workspace before creating a task. Chrome checks for incoming tasks every minute while the Bridge is running.'),help('The Bridge keeps the API key outside Chrome and backups. Sebams shares list names for task creation. Sending a task to AI shares its title and details with Gemini. Photos are included only when you enable that option.'),el('a',{href:'https://aistudio.google.com/apikey',target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Get a free Gemini API key')));
+  body.append(el('details',{class:'section disclosure',open:!bridgeConfig.token},el('summary',{},'Local update installer'),help('This connection is only for installing extension updates on this PC. The ChatGPT task plugin works independently.'),el('form',{class:'add-form',onsubmit:run(async e=>{e.preventDefault();const token=code.value.trim();if(!/^[A-Za-z0-9_-]{32,128}$/.test(token)||token.startsWith('sk-')||token.startsWith('AIza'))throw Error('Use the connection code from Sebams Bridge.');if(!await requestBridgeAccess())throw Error('Local installer access was declined.');bridgeBusy=true;try{await bridgeRequest('/health',token,{timeout:6000});await setBridgeConfig({token});bridgeConfig={token};bridgeStatus='Update installer connected.';await loadUpdateSource();chrome.runtime.sendMessage({type:'update-sync'}).catch(()=>{});}catch(error){bridgeStatus=error.message;throw error;}finally{bridgeBusy=false;renderPanel();}})},field('Local update connection code',code),el('button',{type:'submit',class:'secondary',disabled:bridgeBusy},bridgeConfig.token?'Reconnect installer':'Connect update installer')),el('p',{role:'status',class:'help'},bridgeStatus||(bridgeConfig.token?'Connection saved. Start Bridge when installing updates.':'Optional. No AI API key is needed.'))));
 }
-async function syncBridgeTasks(){
-  if(bridgeSyncBusy||document.hidden)return;
-  bridgeSyncBusy=true;
-  try{
-    bridgeConfig=await getBridgeConfig();
-    if(!bridgeConfig.token||!await hasBridgeAccess())return;
-    const result=await receiveBridgeTasks();
-    if(result.added)toast(`${result.added} task${result.added===1?'':'s'} received from ChatGPT.`);
-  }catch(error){bridgeStatus=error.message;}finally{bridgeSyncBusy=false;}
+function renderChatGPTSettings(){
+  body.append(el('section',{class:'stack chatgpt-settings'},el('span',{class:'eyebrow'},'SEBAMS + CHATGPT'),el('h3',{},'Your tasks, in the conversation'),help('Connect the Sebams plugin in ChatGPT to ask what is due tomorrow, create tasks with a date and priority, or mark them complete. ChatGPT supplies the AI; no AI API key or Sebams Bridge is needed.'),help('Connecting privately synchronizes task titles, details, lists, dates, priorities and completion with your ChatGPT account. Photos, backgrounds and general notes remain on this device.'),row(btn(chatGPTConfig.enabled?'Reconnect ChatGPT':'Connect ChatGPT',async()=>{await connectChatGPT();chatGPTConfig=await getChatGPTConnection();renderPanel();},'primary'),chatGPTConfig.enabled?btn('Sync now',async()=>{chatGPTBusy=true;renderPanel();try{const result=await chrome.runtime.sendMessage({type:'chatgpt-sync'});if(!result?.ok)throw Error('Open the connection page and try again.');}finally{chatGPTBusy=false;chatGPTConfig=await getChatGPTConnection();renderPanel();}},'secondary',{disabled:chatGPTBusy}):null),el('p',{class:'bridge-status',role:'status'},chatGPTConfig.status)));
+  if(chatGPTConfig.enabled){const page=CHATGPT_ORIGIN+'/connect?extension='+chrome.runtime.id+'&nonce='+encodeURIComponent(chatGPTConfig.nonce);body.append(row(el('a',{href:page,target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open connection page'),btn('Disconnect ChatGPT',async()=>{await disconnectChatGPT();chatGPTConfig=await getChatGPTConnection();renderPanel();},'text-button')));if(chatGPTConfig.lastSyncAt)body.append(help('Last synced: '+new Date(chatGPTConfig.lastSyncAt).toLocaleString()));}
+  body.append(el('section',{class:'section stack'},el('h3',{},'Use the Sebams plugin'),help('In ChatGPT, install Sebams from Plugins → Personal → Created by you, then select @Sebams in your chat. Changes synchronize while Chrome is open and when you return to Sebams.'),el('p',{class:'help'},'“What tasks do I have tomorrow?”'),el('p',{class:'help'},'“Add reviewing maths for tomorrow with high priority.”'),el('a',{href:'https://chatgpt.com/',target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open ChatGPT')));
+  for(const conflict of chatGPTConfig.conflicts||[])body.append(el('section',{class:'section stack'},el('h4',{},'Choose which change to keep'),help(conflict.local?.text||conflict.remote?.text||'Task lists'),el('p',{},'Sebams: '+(conflict.local?describe(conflict.local):'Removed')),el('p',{},'ChatGPT: '+(conflict.remote?describe(conflict.remote):'Removed')),row(btn('Keep Sebams',()=>choose(conflict.key,'local'),'secondary'),btn('Keep ChatGPT',()=>choose(conflict.key,'cloud'),'secondary'))));
+  function describe(value){return value.type==='workspace'?value.lists.join(', '):[value.text,value.list,value.dueDate||'No date',value.priority+' priority',value.done?'Completed':'Unfinished',value.details].filter(Boolean).join(' · ');}
+  async function choose(key,choice){await resolveChatGPTConflict(key,choice);await chrome.runtime.sendMessage({type:'chatgpt-sync'});chatGPTConfig=await getChatGPTConnection();renderPanel();}
 }
 function rotationControl(){return field('Rotation frequency',select(state.prefs.backgroundCadence,[['daily','Every day'],['hourly','Every hour'],['tab','Every new tab']],e=>save(s=>{s.prefs.backgroundCadence=e.target.value;})));}
 function appearanceSlider(label,key,min,max,suffix){const output=el('span',{class:'range-value'},state.prefs[key]+suffix);return el('div',{},field(label,input(state.prefs[key],{type:'range',min,max,step:1,oninput:e=>{const value=Number(e.target.value);output.textContent=value+suffix;const styles={panelOpacity:['--surface',`rgba(24,24,27,${value/100})`],panelBlur:['--panel-blur',value+'px'],backgroundBlur:['--background-blur',value+'px'],clockSize:['--clock-scale',value/100]};document.documentElement.style.setProperty(...styles[key]);},onchange:run(e=>save(s=>{s.prefs[key]=Number(e.target.value);}))})),output);}
@@ -391,14 +381,14 @@ function renderTasks() {
     const metadata = el('div', { class: 'task-meta' },taskList===null?el('span',{class:'task-list-tag'},task.list):null, task.priority !== 'normal' ? el('span', {class:task.priority==='high'?'task-priority-high':''}, `${task.priority} priority`) : null, task.dueDate ? el('time', { datetime: task.dueDate, class: overdue ? 'due-date overdue' : 'due-date' }, `${overdue ? 'Overdue · ' : ''}${taskDateLabel(task.dueDate)}`) : null);
     list.append(el('li', { class: `list-item task-row${task.done?' task-done':''}` },
       input('', { type: 'checkbox', checked: task.done, 'aria-label': `Complete ${task.text}`, onchange: run(async e => { const done = e.target.checked; await save(s => { const item = s.workspaces[wsid].tasks.find(t => t.id === task.id); if (item) item.done = done; }); renderPanel(); }) }),
-      el('div', { class: `item-main${task.done ? ' done-text' : ''}` }, btn(el('strong',{},task.text),()=>{taskDetailId=task.id;renderPanel();},'task-title-button',{'aria-label':`Open ${task.text}`,title:'Open task details and reference photos'}), metadata,task.attachments.length||task.ai?el('small',{class:'task-extras'},[task.attachments.length?`${task.attachments.length} photo${task.attachments.length===1?'':'s'}`:'',task.ai?'AI answer':''].filter(Boolean).join(' · ')):null),
+      el('div', { class: `item-main${task.done ? ' done-text' : ''}` }, btn(el('strong',{},task.text),()=>{taskDetailId=task.id;renderPanel();},'task-title-button',{'aria-label':`Open ${task.text}`,title:'Open task details and reference photos'}), metadata,task.attachments.length||task.ai?el('small',{class:'task-extras'},[task.attachments.length?`${task.attachments.length} photo${task.attachments.length===1?'':'s'}`:'',task.ai?'Saved study note':''].filter(Boolean).join(' · ')):null),
       el('div', { class: 'item-actions' },
         ibtn('more',`More actions for ${task.text}`,e=>{const actions=e.currentTarget.parentElement;actions.classList.toggle('expanded');e.currentTarget.setAttribute('aria-expanded',String(actions.classList.contains('expanded')));},{class:'icon-button task-more','aria-expanded':'false'}),
         ibtn('up', `Move ${task.text} up`, async () => { await save(s => moveItem(s.workspaces[wsid].tasks, task.id, -1, matches)); renderPanel(); }, { disabled: tasks[0]?.id === task.id }),
         ibtn('down', `Move ${task.text} down`, async () => { await save(s => moveItem(s.workspaces[wsid].tasks, task.id, 1, matches)); renderPanel(); }, { disabled: tasks.at(-1)?.id === task.id }),
         ibtn('edit', `Edit ${task.text}`, () => { editingTask = task.id; renderPanel(); }),
         ibtn('trash', `Delete ${task.text}`, async () => {
-          aiRequests.get(wsid+'/'+task.id)?.controller.abort();taskDrafts.delete(wsid+'/'+task.id);
+          taskDrafts.delete(wsid+'/'+task.id);
           let removed, index; await save(s => { const items = s.workspaces[wsid].tasks; index = items.findIndex(t => t.id === task.id); if (index >= 0) [removed] = items.splice(index,1); }); renderPanel(); if (!removed) return;
           toast('Task deleted.', async () => { await save(s => { const items = s.workspaces[wsid].tasks; if (!items.some(t => t.id === removed.id)) items.splice(Math.min(index,items.length),0,removed); }); renderPanel(); });
         })
@@ -417,7 +407,6 @@ function renderTasks() {
     if (!matchesTaskDate(task,taskDateFilter)) taskDateFilter = 'all'; renderPanel();
   }) },el('div',{class:'task-add-line'},icon('plus'),text,el('button',{type:'submit',class:'primary'},'Add')),el('div',{class:'task-add-options'},field('List',lists),field('Priority',priority),field('Date (optional)',date))));
 }
-function taskSnapshot(task){return JSON.stringify([task.text,task.details,task.priority,task.dueDate,task.list,task.attachments,task.ai]);}
 async function openReferencePhoto(image){
   const blob=await getTaskAttachment(image.id);if(!blob)throw Error('This photo is unavailable.');const url=URL.createObjectURL(blob),previous=document.activeElement;
   const viewer=el('dialog',{class:'reference-viewer','aria-label':`Reference photo ${image.name}`},el('div',{class:'row between'},el('strong',{},image.name),ibtn('close','Close reference photo',()=>viewer.close())),el('img',{src:url,alt:image.name}));document.body.append(viewer);viewer.addEventListener('close',()=>{URL.revokeObjectURL(url);viewer.remove();previous?.focus();},{once:true});viewer.showModal();
@@ -425,7 +414,7 @@ async function openReferencePhoto(image){
 function renderTaskDetail(content,list,task,wsid){
   const key=wsid+'/'+task.id;
   if(!taskDrafts.has(key))taskDrafts.set(key,{details:task.details,base:task.details,instruction:'Guíame con pistas para que pueda resolver esta tarea por mi cuenta. No des la solución completa.',includePhotos:false});
-  const draft=taskDrafts.get(key),request=aiRequests.get(key);
+  const draft=taskDrafts.get(key);
   const details=el('textarea',{rows:5,maxlength:12000,value:draft.details,placeholder:'Paste the exercise, instructions, or what you need help with…','aria-label':'Task details',oninput:e=>{draft.details=e.target.value;}});
   const saveDetails=async()=>{
     if(draft.details===draft.base)return;
@@ -436,7 +425,7 @@ function renderTaskDetail(content,list,task,wsid){
   list.replaceChildren();content.replaceChildren(heading,list);list.classList.add('task-detail-scroll');
   const detail=el('li',{class:'task-detail stack'},field('Enunciado / task details',details),row(btn('Save details',async()=>{await saveDetails();toast('Task details saved.');},'secondary'),btn('Load saved details',()=>{const latest=getState().workspaces[wsid].tasks.find(t=>t.id===task.id);if(!latest)throw Error('This task was deleted.');draft.details=draft.base=latest.details;renderPanel();},'text-button',{title:'Replace this draft with the saved task details'}),btn(task.done?'Mark unfinished':'Mark complete',async()=>{await saveDetails();await save(s=>{const item=s.workspaces[wsid].tasks.find(t=>t.id===task.id);if(item)item.done=!item.done;});renderPanel();},'text-button')));
   list.append(detail);
-  const attachmentSection=el('section',{class:'task-attachments section'},el('div',{class:'row between'},el('h3',{},'Photos'),el('span',{class:'help'},`${task.attachments.length}/4`)),help('JPG, PNG or WebP · up to 8 MB each. Keep instructions or examples here for your own reference. Photos stay on this device unless you explicitly include them in an AI request.'));
+  const attachmentSection=el('section',{class:'task-attachments section'},el('div',{class:'row between'},el('h3',{},'Photos'),el('span',{class:'help'},`${task.attachments.length}/4`)),help('JPG, PNG or WebP · up to 8 MB each. Keep instructions or examples here for your own reference. Photos stay on this device. Download a photo when you want to attach it in ChatGPT.'));
   const upload=input('',{type:'file',accept:'image/jpeg,image/png,image/webp',multiple:true,'aria-label':'Attach task photos',disabled:task.attachments.length>=4,onchange:run(async e=>{
     const files=[...e.target.files];if(!files.length)return;if(task.attachments.length+files.length>4)throw Error('Attach up to four photos to a task.');
     await saveDetails();try{for(const file of files)await putTaskAttachment(wsid,task.id,file);toast('Photos attached.');}finally{renderPanel();}
@@ -448,21 +437,8 @@ function renderTaskDetail(content,list,task,wsid){
     gallery.append(el('article',{class:'task-photo'},thumbnail,el('span',{title:image.name},image.name),row(btn('View',()=>openReferencePhoto(image),'text-button',{'aria-label':`View photo ${image.name}`}),btn('Download',async()=>{const blob=await getTaskAttachment(image.id);if(!blob)throw Error('This photo is unavailable.');const url=URL.createObjectURL(blob);el('a',{href:url,download:image.name}).click();setTimeout(()=>URL.revokeObjectURL(url),2000);},'text-button',{'aria-label':`Download photo ${image.name}`}),btn('Remove',async()=>{await saveDetails();await removeTaskAttachment(wsid,task.id,image.id);renderPanel();},'text-button danger',{'aria-label':`Remove photo ${image.name}`}))));
   }
   renderTaskExtras(detail,task,taskToolsContext(wsid));detail.append(attachmentSection);
-  const instruction=select(draft.instruction,[['Guíame con pistas para que pueda resolver esta tarea por mi cuenta. No des la solución completa.','Give me hints'],['Explica los conceptos de esta tarea con un ejemplo parecido, sin resolver mi ejercicio.','Explain the concepts'],['Divide esta tarea en un plan de estudio con pasos concretos.','Make a study plan'],['Hazme preguntas cortas sobre esta tarea para comprobar lo que entiendo.','Quiz me']],e=>{draft.instruction=e.target.value;},{'aria-label':'AI assistance mode'});
-  const assistant=el('section',{class:'task-ai section'},el('div',{class:'row between'},el('h3',{},'Study guidance'),el('span',{class:'ai-label'},'GEMINI')),field('How can I help?',instruction),help('Get hints and explanations, or copy your prompt into ChatGPT. You choose when the task is complete.'),toggle('Include reference photos in this AI request',!!draft.includePhotos,value=>{draft.includePhotos=value;}));
-  const start=async()=>{
-    if(aiRequests.has(key))return;
-    const controller=new AbortController(),mode=draft.instruction,includePhotos=!!draft.includePhotos;aiRequests.set(key,{controller});renderPanel();
-    try{
-      await saveDetails();bridgeConfig=await getBridgeConfig();if(!bridgeConfig.token)throw Error('Connect Sebams Bridge in Settings → AI first.');const current=getState().workspaces[wsid].tasks.find(t=>t.id===task.id);if(!current)throw Error('This task was deleted.');const snapshot=taskSnapshot(current);
-      const images=await Promise.all((includePhotos?current.attachments:[]).map(async image=>{const blob=await getTaskAttachment(image.id);if(!blob)throw Error('A task photo is missing. Reattach it before sending.');return{name:image.name,type:image.type,data:await blobDataURL(blob)};}));
-      const result=normalizeAIResult(await bridgeRequest('/solve',bridgeConfig.token,{body:{task:{text:current.text,priority:current.priority,dueDate:current.dueDate,list:current.list,details:current.details},instruction:mode,images},signal:controller.signal}));
-      await save(s=>{if(controller.signal.aborted)throw Error('AI request cancelled.');const item=s.workspaces[wsid].tasks.find(t=>t.id===task.id);if(!item||taskSnapshot(item)!==snapshot)throw Error('This task changed while the AI was working. Send its latest version again.');item.ai=result;});toast('AI answer saved with your task.');
-    }finally{aiRequests.delete(key);if(panelName==='tasks'&&taskDetailId===task.id)renderPanel();}
-  };
-  assistant.append(row(btn(request?'Working…':task.ai?'Ask again':'Ask AI',start,'primary',{disabled:!!request}),request?btn('Cancel request',()=>request.controller.abort(),'text-button'):btn('AI settings',()=>{settingsTab='ai';openPanel('settings');},'text-button')),row(btn('Copy for ChatGPT',async()=>{await navigator.clipboard.writeText(taskPrompt({...task,details:draft.details},draft.instruction));toast(task.attachments.length?'Prompt copied. Attach the downloaded photos in ChatGPT.':'Prompt copied. Paste it in ChatGPT.');},'secondary'),el('a',{href:'https://chatgpt.com/',target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open ChatGPT')));
-  if(request)assistant.append(el('p',{role:'status',class:'help'},'Preparing guidance… You can keep browsing Sebams.'));
-  if(task.ai)assistant.append(el('article',{class:'ai-answer'},el('div',{class:'row between'},el('h4',{},'Saved answer'),row(btn('Copy answer',async()=>{await navigator.clipboard.writeText(task.ai.text);toast('Answer copied.');},'text-button'),btn('Remove answer',async()=>{const previous=task.ai;await save(s=>{const item=s.workspaces[wsid].tasks.find(t=>t.id===task.id);if(!item||JSON.stringify(item.ai)!==JSON.stringify(previous))throw Error('The saved answer changed. Reopen this task.');item.ai=null;});renderPanel();toast('AI answer removed.',async()=>{await save(s=>{const item=s.workspaces[wsid].tasks.find(t=>t.id===task.id);if(!item||item.ai)throw Error('A newer answer cannot be replaced.');item.ai=previous;});renderPanel();});},'text-button danger',{disabled:!!request}))),el('div',{class:'ai-answer-text'},task.ai.text),el('p',{class:'help'},`${task.ai.model} · ${new Date(task.ai.createdAt).toLocaleString()}`)));
+  const assistant=el('section',{class:'section'},row(btn('Copy for ChatGPT',async()=>{await navigator.clipboard.writeText(taskPrompt({...task,details:draft.details},draft.instruction));toast('Task copied. Paste it in ChatGPT; attach photos there if useful.');},'secondary'),el('a',{href:'https://chatgpt.com/',target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open ChatGPT')));
+  if(task.ai)assistant.append(el('details',{class:'disclosure'},el('summary',{},'Saved study note'),el('div',{class:'ai-answer-text'},task.ai.text)));
   detail.append(assistant);
 }
 function setPinned(links,id,pinned) {
@@ -609,14 +585,14 @@ async function tick() {
 }
 async function boot() {
   state = await initStore(); await save(s => { rollover(s); s.timer = reconcileTimer(s.timer);if(s.prefs.panelBlur>0){s.prefs.panelBlur=0;s.prefs.panelOpacity=Math.max(s.prefs.panelOpacity,88);} });
-  bridgeConfig=await getBridgeConfig();
+  bridgeConfig=await getBridgeConfig();chatGPTConfig=await getChatGPTConnection();
   photoAccess=await hasPhotoAccess();
   globalThis.chrome?.permissions?.onRemoved?.addListener(()=>{hasPhotoAccess().then(access=>{photoAccess=access;if(panelName==='backgrounds')renderPanel();}).catch(()=>{});});
   lastCompletedAt = state.timer.completedAt || 0; installHandlers();installCommands();
-  reminderInbox=installReminderInbox({getState:()=>state,save,run,toast,openTask:async(wsid,id)=>{await save(s=>{s.workspace=wsid;});await openTaskById(id);},canShow:()=>state.onboarded&&!document.hidden&&!state.timer.focusView&&!focusEditing&&!notesDirty&&!aiRequests.size&&![...taskDrafts.values()].some(d=>d.details!==d.base)&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)});
+  reminderInbox=installReminderInbox({getState:()=>state,save,run,toast,openTask:async(wsid,id)=>{await save(s=>{s.workspace=wsid;});await openTaskById(id);},canShow:()=>state.onboarded&&!document.hidden&&!state.timer.focusView&&!focusEditing&&!notesDirty&&![...taskDrafts.values()].some(d=>d.details!==d.base)&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)});
   subscribe(next => { state = next; syncTaskAlarm();renderDashboard(); if (panelName && panel.open && !notesDirty && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) renderPanel(); });
   renderDashboard(); syncTimerAlarm();syncTaskAlarm(); updateWeather(); setInterval(run(tick), 1000); setInterval(() => updateWeather(), 30 * 60 * 1000);
-  syncBridgeTasks();setInterval(syncBridgeTasks,10000);
+  chrome.runtime.sendMessage({type:'chatgpt-sync'}).catch(()=>{});setInterval(async()=>{if(panelName==='settings'&&settingsTab==='chatgpt'&&!chatGPTBusy){chatGPTConfig=await getChatGPTConnection();renderPanel();}},10000);
   const deepLink=new URLSearchParams(location.search);if(deepLink.has('task')){const wsid=deepLink.get('workspace');if(['personal','work','study'].includes(wsid))await save(s=>{s.workspace=wsid;});await openTaskById(deepLink.get('task'));}
   else await reminderInbox.show();
   pruneTaskAttachments().catch(()=>{});setInterval(()=>pruneTaskAttachments().catch(()=>{}),60000);

@@ -1,13 +1,13 @@
 {
   "format": "sebams-local-release",
-  "version": "1.8.0",
-  "notes": "Opening task reminders with a configurable lead time and reference hour, snooze and completion; shared GitHub Releases update source for independent computers.",
-  "publishedAt": "2026-10-08T23:23:49.961Z",
+  "version": "1.9.0",
+  "notes": "Private Sebams plugin for ChatGPT: read tasks, create dated priorities, and synchronize edits without a local AI Bridge. Integrated Gemini assistant removed; reference photos remain local. Updates installer connection moved into Updates settings.",
+  "publishedAt": "2026-10-13T01:45:08.149Z",
   "files": [
     {
       "path": "app.js",
-      "size": 97685,
-      "sha256": "cb275b49ae1039bc2b4605aab08fc408a9feb552f395a316cba1aaad1b067661"
+      "size": 94920,
+      "sha256": "a65a8f9ac8809179441578dca43b713094dafac38029c8142da5d83fbc722eba"
     },
     {
       "path": "ASSETS.md",
@@ -80,6 +80,11 @@
       "sha256": "b1bc1a9e37e802572c4dc05cbcf47ad2c797cba6869a03ec3fd7e099f3cd9cb4"
     },
     {
+      "path": "GUIA-1.9.md",
+      "size": 3471,
+      "sha256": "5ee3261d95e73d5ab5e1ec93e35c9d79e5c7b5066694dbc94aa216ee31bee4c7"
+    },
+    {
       "path": "lib/ai.js",
       "size": 3003,
       "sha256": "1f94fa41144560db36a97a8720750998540dbef9f76f6e8d24d012e1804ed097"
@@ -93,6 +98,11 @@
       "path": "lib/capture.js",
       "size": 518,
       "sha256": "925b7352a3ec30097f32af5e0b3fa251c9752bf170c019c4fd9abd0d6be87d0b"
+    },
+    {
+      "path": "lib/chatgpt.js",
+      "size": 6437,
+      "sha256": "e8f61e84b235b4882f91f3d051b4ace17c2ba946d5fb25cbbac195b167c58e65"
     },
     {
       "path": "lib/content.js",
@@ -141,8 +151,13 @@
     },
     {
       "path": "lib/store.js",
-      "size": 18912,
-      "sha256": "a49974e1d4b80ccae0abc50621d92bf62ef6109c8cfa4a174e3135db968980f8"
+      "size": 25323,
+      "sha256": "8cba2643c029b5ccf2d010a88deecc0a1127ef2a787798419b056934c8282be3"
+    },
+    {
+      "path": "lib/task-sync-model.js",
+      "size": 5413,
+      "sha256": "d80375c667d6772cdeae60a9339ac0c3e5b8a5ed04dca756d72d9751684df818"
     },
     {
       "path": "lib/task-tools-ui.js",
@@ -181,8 +196,8 @@
     },
     {
       "path": "manifest.json",
-      "size": 1453,
-      "sha256": "bb9afca08c4969ac36f79321111e1e8d4a6250a71d3c8406d04e68e3ef5b6920"
+      "size": 1665,
+      "sha256": "ed18783fb51284bbd68a6565ad43333db518ec02b8ba3129ba17e543dbc8ee36"
     },
     {
       "path": "newtab.html",
@@ -191,18 +206,18 @@
     },
     {
       "path": "PRIVACY.md",
-      "size": 11427,
-      "sha256": "8108e5e6293ecb4a88b50ff0b54095e18a9da74c1da9a7f06be1b7773977562b"
+      "size": 6869,
+      "sha256": "00facbed042ddc6a2370250e0a9d6421f50fed39e10ee845d307f7a5aeece313"
     },
     {
       "path": "README.md",
-      "size": 15224,
-      "sha256": "38b668ba15984b8426ce0196b0db44ea958e1eeaf9250e4b52cfacdc235c42af"
+      "size": 14443,
+      "sha256": "22c3c041291341ec7bd113d8ebb021c9b7232c23150afab8147a954a5a1fcfab"
     },
     {
       "path": "service-worker.js",
-      "size": 5396,
-      "sha256": "ce324e71718cfb881971639a2a198ea874b4462e9d8e5837349a5339884813ad"
+      "size": 5347,
+      "sha256": "f56fbf94f64cb140882b1ed527be2b9da11e85c54a44561084dc7724c9c87f49"
     },
     {
       "path": "styles.css",
@@ -211,8 +226,8 @@
     },
     {
       "path": "VERIFY.md",
-      "size": 23421,
-      "sha256": "65afcd007eaf754c8d4c33a7613f59dc4023d55cbd47cc7820e83afced4ef77f"
+      "size": 24841,
+      "sha256": "2b501dd4fa270ab8d2b16db2a1f84377402cde8ebeda684d63ceb36443396572"
     }
   ]
 }

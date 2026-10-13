@@ -1,3 +1,13 @@
+# Sebams 1.9.0: verification
+
+On October 12, 2026, 70 existing extension unit checks, 7 new connector checks and 11 focused real Chrome checks passed. The hosted connector also passed the TypeScript check and production build. Chrome checks use an isolated profile and an SQLite adapter implementing D1 transaction behavior, with actual IndexedDB/photos and extension messaging. They cover the removed assistant, bidirectional task changes, idempotent creation, local attachments/extras, edits made during a sync, explicit conflict resolution, completion/deletion, Site-origin/nonce restrictions, private backup exclusions, disconnect races, responsive layout and no page errors.
+
+Connector checks cover the account-local date at a UTC day boundary, tomorrow queries, creation retries after subsequent edits, account isolation, invalid fields/lists, distinct-field merging, deletion conflicts, stale versions, a forced simultaneous-write race with atomic compare-and-set, omitted local photos/answers/notes and authenticated MCP task calls.
+
+The private Sites deployment provisions the MCP plugin. Installation, ChatGPT OAuth sign-in, the Chrome host-permission prompt and linking the user’s actual browser account require the user’s own connection flow; headless checks do not claim those account actions were completed. No personal task data or images are uploaded during development.
+
+## Historical verification
+
 # Sebams 1.8.0: verification
 
 On October 8, 2026, **70 extension unit checks**, **32 Bridge checks** and **45 focused Chrome scenarios** passed on Chrome 154 with isolated profiles. The browser reports are reminders.json (13), product.json (18) and updates.json (14). Earlier reports below are historical.

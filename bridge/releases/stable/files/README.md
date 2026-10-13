@@ -1,22 +1,18 @@
 # Sebams
 
+Version **1.9.0** replaces the integrated Gemini assistant with a private Sebams plugin for ChatGPT. Read or create tasks from a conversation and synchronize their text, details, dates, priorities and completion. This optional connection needs no model API key or Sebams Bridge. Photos remain local reference material. See the Spanish [1.9 guide](GUIA-1.9.md).
+
 Version **1.8.0** adds opening task reminders with configurable anticipation and time, preview, snooze and task actions, plus a shared GitHub Releases update source for other PCs. See the Spanish [1.8 guide](GUIA-1.8.md). Existing schema 5 data migrates to schema 6 while retaining all task tools, photos and settings.
 
 Version **1.7.0** adds local update checks and installation, direct shortcut removal inside Links, drag ordering for Links and dashboard pins, a simpler Tasks sidebar, and dark panel backdrops without blur. See the Spanish [1.7 guide](GUIA-1.7.md).
 
 Version **1.6.0** adds checklists, optional desktop reminders, daily/weekly/monthly recurrence, a weekly calendar, right-click task capture, estimated and tracked time, exam study planning, reusable templates, weekly progress by subject, and Ctrl+K search across tasks, lists and links. See the Spanish [1.6 guide](GUIA-1.6.md). Existing data migrates to schema 5 without losing photos, answers, dates or settings.
 
-Pinned shortcuts support logo-only, name-only or both, an optional dark surface, and direct removal with Undo. Reference photos open in an enlarged viewer. AI defaults to hints and study guidance, with photo sharing opt-in per task draft.
-
-Version 1.5.1 adds task details, up to four JPG/PNG/WebP photos per task, and a Gemini assistant (free tier) with guidance modes. Click a task title to open its details. Photos and details work offline. AI requires the separate **Sebams Bridge** service and a free Gemini API key configured there. No API key is entered in Chrome. Without a key, **Copy for ChatGPT** prepares the prompt; download and attach the task photos manually in ChatGPT.
-
-In **Settings → AI**, enter the connection code shown by Sebams Bridge and allow access to the local connection. The Bridge includes MCP tools for conversational task creation from ChatGPT. Connecting those tools to your ChatGPT account is a separate setup step; see the Bridge's Spanish guide. Chrome receives pending tasks every minute while the Bridge and Chrome are running, or sooner with a Sebams tab open. The service queues tasks while Chrome is closed. The extension itself needs no account or installation packages.
-
-AI sends only the selected task's title, details, priority, date and list when you click **Ask AI**. Photos are sent only with **Include reference photos in this AI request** enabled. An answer is saved with the task, and the completion checkbox stays under your control. Backups include photos and answers but exclude the local connection code. Version 1.5.1 upgrades older data in place.
+Pinned shortcuts support logo-only, name-only or both, an optional dark surface, and direct removal with Undo. Reference photos open in an enlarged viewer. **Copy for ChatGPT** prepares a task prompt; download photos when you want to attach them in ChatGPT. Answers from the former assistant are retained as saved study notes. The Bridge connection for unpacked-extension updates is now under **Settings → Updates → Local update installer**.
 
 A calm, local-first new tab for Chrome. Original code, an original Sebams mark, three generated scenic backgrounds, and an optional online landscape collection. The composition follows the familiar clock, greeting, focus, weather, and corner tools in the [official Momentum reference](https://chromewebstore.google.com/detail/momentum/laookkfknpbbblfpciffpaejjkokdgca).
 
-## Update to 1.8.0
+## Update to 1.9.0
 
 Replace the files in your existing Sebams folder with this release, then click **Reload** on its card in `chrome://extensions` and open a new tab. Keep the same folder location and installed extension to retain its local data. Existing tasks, dates, notes, pinned links, settings, images, and backups upgrade automatically. Version 1.0 tasks start without a date and its links start unpinned. Chrome may ask you to accept the added context-menu capability. Notification permission is requested separately for optional desktop notifications. Opening reminders need no notification permission. Export a backup before moving the extension to a different folder or computer.
 
@@ -32,7 +28,7 @@ Version 1.3.1 adds **Rename list** and **Delete list** below the selected subjec
 4. Choose **Load unpacked**, then select the **Sebams** folder containing `manifest.json`.
 5. Open a new tab. If Chrome asks whether to keep this new-tab page, choose **Keep it**.
 
-The dashboard, task details and photo attachments need no build, account, API key, or package installation. The optional Gemini assistant needs Sebams Bridge and an API key; ChatGPT MCP also needs a separate account connection. Chrome shows the location and favicon capabilities during installation; Sebams uses location only after you choose **Use my location**. Weather, photo and local Bridge access are requested separately when enabling each feature. See [PRIVACY.md](PRIVACY.md).
+The dashboard, task details and photo attachments need no build, account, API key, or package installation. The optional ChatGPT plugin needs its private account connection. Sebams Bridge is used only for installing unpacked-extension updates. Chrome shows the location and favicon capabilities during installation; Sebams uses location only after you choose **Use my location**. Weather, photo and local Bridge access are requested separately when enabling each feature. See [PRIVACY.md](PRIVACY.md).
 
 ## A short guide
 

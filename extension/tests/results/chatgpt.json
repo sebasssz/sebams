@@ -1,0 +1,49 @@
+{
+  "results": [
+    {
+      "name": "ChatGPT replaces the integrated AI settings and photos remain usable",
+      "status": "pass"
+    },
+    {
+      "name": "Local task details sync to the MCP database while photos stay local",
+      "status": "pass"
+    },
+    {
+      "name": "MCP creates a dated high-priority task, retries once and the extension receives it",
+      "status": "pass"
+    },
+    {
+      "name": "Cloud priority edits preserve the local reference photo and task extras",
+      "status": "pass"
+    },
+    {
+      "name": "A local edit made during synchronization is kept and uploaded on the next sync",
+      "status": "pass"
+    },
+    {
+      "name": "Conflicting titles preserve both versions and the user can choose the local change",
+      "status": "pass"
+    },
+    {
+      "name": "Cloud completion marks the task complete and local deletion is synchronized",
+      "status": "pass"
+    },
+    {
+      "name": "Only the paired Site can access tasks and connection state stays out of backups",
+      "status": "pass"
+    },
+    {
+      "name": "Disconnect cancels incoming sync and cannot be undone by an old callback",
+      "status": "pass"
+    },
+    {
+      "name": "ChatGPT settings fit a phone-width viewport",
+      "status": "pass"
+    },
+    {
+      "name": "No browser errors",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

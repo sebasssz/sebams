@@ -1,35 +1,23 @@
 # Sebams
 
-Una extensión de nueva pestaña para Chrome con tareas por materia, fechas, listas, fotos de referencia, reloj, fondos, accesos directos y recordatorios al entrar.
+Extensión de nueva pestaña con tareas por materia, fechas, prioridades, fotos de referencia, recordatorios, notas, fondos y accesos directos.
 
-## Descargar
+El código actual en main es **1.9.0**. Esta versión retira el asistente integrado y añade un plugin privado de Sebams para ChatGPT. La conexión de tareas funciona sin Sebams Bridge ni clave de API de IA.
 
-Abre **Releases** y descarga **Sebams.zip** y, si quieres usar las actualizaciones compartidas o la IA opcional, **Sebams-Bridge.zip**.
+## Conectar ChatGPT
 
-La versión actual es **1.8.0**. El código de la extensión está en [extension](extension) y el servicio local en [bridge](bridge).
+Instala el plugin Sebams desde Plugins → Personal → Created by you. En la extensión abre **Settings → ChatGPT → Connect ChatGPT**, permite acceso al sitio privado de conexión e inicia sesión con la misma cuenta. Selecciona **@Sebams** en el chat y pregunta «¿Qué tengo para mañana?» o pide añadir una tarea con fecha y prioridad.
 
-## Instalar
+El plugin es personal de la cuenta que creó el conector; no es una app pública de la tienda. Se sincronizan tareas, detalles, listas, fechas, prioridades y finalización. Las fotos y otros datos del dashboard permanecen locales. Los cambios simultáneos se conservan para revisión.
 
-1. Extrae Sebams.zip a una carpeta permanente.
-2. Abre chrome://extensions, activa Developer mode y pulsa Load unpacked.
-3. Selecciona la carpeta Sebams que contiene manifest.json.
+[Guía 1.9](extension/GUIA-1.9.md) · [Privacidad](extension/PRIVACY.md) · [Verificación](extension/VERIFY.md)
 
-## Actualizaciones en varias computadoras
+## Instalar o actualizar
 
-En cada PC, extrae Sebams-Bridge.zip, abre SetupUpdates.cmd y selecciona la carpeta instalada de la extensión. Inicia Start.cmd y conecta su código propio en **Settings → AI**. Usa este repositorio público en **Settings → Updates → Release source**.
+Las descargas de Releases contienen la última versión publicada como Release. Para usar el código actual, descarga el ZIP de main, conserva tu carpeta instalada y copia allí el contenido de **extension/**. Pulsa Reload en la tarjeta de Sebams de chrome://extensions o brave://extensions. Mantener la carpeta y la instalación conserva sus datos.
 
-Activa **Check for updates automatically** para comprobar una vez al día, o pulsa **Check for updates**. **Install update** instala la versión encontrada y recarga Sebams. Cada computadora conserva sus propias tareas; los datos personales no se sincronizan.
+## Actualizaciones
 
-No hace falta una clave de IA para las actualizaciones. Bridge requiere Node.js 22 o superior. El archivo **sebams-update.json** de cada Release es el paquete que utiliza el actualizador.
+Bridge sigue siendo el instalador opcional de la extensión desempaquetada. Su conexión está ahora en **Settings → Updates → Local update installer**. Cada PC configura su carpeta con SetupUpdates.cmd y usa este mismo repositorio como fuente de Releases. Las tareas de cada navegador permanecen independientes hasta conectar explícitamente el plugin privado de ChatGPT.
 
-## Recordatorios
-
-Configura **Settings → General → Task reminders**. Por defecto aparece una ventana al entrar desde un día antes a las 9 AM. Puedes cambiar la antelación y hora, abrir o completar la tarea y posponer los avisos una hora.
-
-[Guía de la versión 1.8](extension/GUIA-1.8.md) · [Privacidad](extension/PRIVACY.md) · [Verificación](extension/VERIFY.md)
-
-## Desarrollo
-
-La extensión usa HTML, CSS y módulos JavaScript locales, sin compilación. Sus pruebas se ejecutan con Node.js 24 desde extension mediante npm test. Bridge incluye pruebas para tareas, MCP y actualizaciones; sus dependencias se instalan con Start.cmd o pnpm install dentro de bridge.
-
-Las Releases contienen el código distribuible. Claves de API, códigos de conexión, perfiles de Chrome y datos personales quedan fuera del repositorio.
+No se publican claves, códigos de conexión, perfiles de navegador ni tareas personales. La extensión usa HTML, CSS y JavaScript sin compilación. El backend privado usa MCP, autenticación de Sites y D1. Las pruebas de Chrome requieren el checkout completo; las pruebas unitarias de la extensión se ejecutan con Node.js 24.

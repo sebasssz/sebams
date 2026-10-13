@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Sebams — A little space to focus",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "A calm new tab with scenic backgrounds, a daily focus, tasks, weather, notes, habits, and a reliable focus timer. Local by default.",
   "minimum_chrome_version": "120",
   "chrome_url_overrides": {
@@ -24,14 +24,18 @@
     "https://geocoding-api.open-meteo.com/*",
     "https://picsum.photos/*",
     "https://fastly.picsum.photos/*",
-    "http://127.0.0.1/*"
+    "http://127.0.0.1/*",
+    "https://sebams-connect.poeticbadge1.chatgpt.site/*"
   ],
   "background": {
     "service_worker": "service-worker.js",
     "type": "module"
   },
+  "externally_connectable": {
+    "matches": ["https://sebams-connect.poeticbadge1.chatgpt.site/*"]
+  },
   "content_security_policy": {
-    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self' blob: data: https://picsum.photos https://fastly.picsum.photos https://www.google.com https://*.gstatic.com; connect-src 'self' http://127.0.0.1:8787 https://api.open-meteo.com https://geocoding-api.open-meteo.com https://picsum.photos https://fastly.picsum.photos; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
+    "extension_pages": "default-src 'self'; script-src 'self'; object-src 'none'; style-src 'self'; img-src 'self' blob: data: https://picsum.photos https://fastly.picsum.photos https://www.google.com https://*.gstatic.com; connect-src 'self' http://127.0.0.1:8787 https://api.open-meteo.com https://geocoding-api.open-meteo.com https://picsum.photos https://fastly.picsum.photos https://sebams-connect.poeticbadge1.chatgpt.site; font-src 'self'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'"
   },
   "optional_permissions": [
     "notifications"
