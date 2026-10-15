@@ -17,3 +17,24 @@ test('stale versions and simultaneous database writes cannot partially overwrite
 });
 test('local projections omit photos, saved AI answers, notes and credentials; edits made during a sync survive',()=>{const state={workspaces:Object.fromEntries(['personal','work','study'].map(id=>[id,{lists:['Biology'],notes:'Private notes',tasks:id==='study'?[{...task(),attachments:[{data:'photo'}],ai:{text:'Saved reply'},recurrence:{frequency:'weekly'}}]:[]}]))};const projection=projectTasks(state),key='task:study:local-task';assert.equal(JSON.stringify(projection).includes('Private'),false);assert.equal(JSON.stringify(projection).includes('photo'),false);assert.equal(JSON.stringify(projection).includes('Saved reply'),false);const current={...projection,[key]:{...projection[key],details:'Edited while syncing'}};const records=Object.entries(projection).map(([key,value])=>({key,value:key.startsWith('task:')?{...value,priority:'high'}:value,version:4}));const result=reconcileProjection(projection,current,records);assert.equal(result.values[key].details,'Edited while syncing');assert.equal(result.values[key].priority,'high');assert.equal(planChanges(projection,projection).length,0);assert.equal(mergeRecord(task(),null,task({text:'New title'})).conflicts.length,1);});
 test('MCP discovery is available for provisioning while task calls require an authenticated account',async()=>{const discovered=await handleMcp({jsonrpc:'2.0',id:1,method:'tools/list'},{db:null,owner:''});assert.equal(discovered.result.tools.length,4);const unauthorized=await handleMcp({jsonrpc:'2.0',id:2,method:'tools/call',params:{name:'get_tasks',arguments:{}}},{db:null,owner:''});assert.equal(unauthorized.result.isError,true);assert.match(unauthorized.result.content[0].text,/Sign in/);});
+
+test('custom profiles synchronize names, support MCP tasks, and delete or restore atomically',async()=>{
+  const db=d1(),service=await connected(db),id='profile-school-2026',metadata={type:'workspace',id,name:'School',color:'sand',lists:['Inbox','Biology']};
+  await service.sync({profileSupport:1,expectedUserId:'owner',timezone:'America/La_Paz',changes:[{key:'workspace:'+id,base:null,value:metadata}]});
+  assert.equal((await service.context()).workspaces.find(w=>w.id===id).name,'School');
+  const created=await service.create({requestId:'custom-profile-01',text:'Read the lab guide',dueDate:'2026-10-13',priority:'high',workspace:id,list:'Biology'});
+  await assert.rejects(service.sync({expectedUserId:'owner',timezone:'America/La_Paz',changes:[]}),/2.0/);
+  await assert.rejects(service.sync({profileSupport:1,expectedUserId:'owner',timezone:'America/La_Paz',changes:[{key:'workspace:'+id,base:metadata,value:null}]}),/available/);
+  assert.equal((await service.list({workspace:id})).tasks.length,1);
+  const records=(await service.snapshot()).records.filter(r=>r.key==='workspace:'+id||r.key.startsWith('task:'+id+':'));
+  await service.sync({profileSupport:1,expectedUserId:'owner',timezone:'America/La_Paz',changes:records.map(r=>({key:r.key,base:r.value,value:null}))});
+  assert.equal((await service.list({workspace:id})).tasks.length,0);assert.equal((await service.context()).workspaces.some(w=>w.id===id),false);
+  await service.sync({profileSupport:1,expectedUserId:'owner',timezone:'America/La_Paz',changes:records.map(r=>({key:r.key,base:null,value:r.value}))});
+  assert.equal((await service.list({workspace:id})).tasks[0].id,created.task.id);
+});
+test('MCP discovery accepts bounded custom profile IDs and reports their names to another caller',async()=>{
+  const db=d1(),service=await connected(db),id='profile-art-room-01';await service.sync({profileSupport:1,expectedUserId:'owner',timezone:'America/La_Paz',changes:[{key:'workspace:'+id,base:null,value:{type:'workspace',id,name:'Art room',color:'rose',lists:['Inbox']}}]});
+  const tools=(await handleMcp({jsonrpc:'2.0',id:1,method:'tools/list'},{db,owner:'owner'})).result.tools;
+  const field=tools.find(t=>t.name==='create_task').inputSchema.properties.workspace;assert.ok(new RegExp(field.pattern).test(id));assert.equal(new RegExp(field.pattern).test('__proto__'),false);
+  const context=(await handleMcp({jsonrpc:'2.0',id:2,method:'tools/call',params:{name:'get_task_context',arguments:{}}},{db,owner:'owner'})).result.structuredContent;assert.equal(context.workspaces.find(w=>w.id===id).name,'Art room');assert.equal((await taskService(db,'other').context()).workspaces.length,0);
+});

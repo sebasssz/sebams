@@ -11,10 +11,10 @@ async function runTaskSync(){
     const now=Date.now();if(now<reminderRetryAfter){await chrome.alarms.create(TASKS,{when:reminderRetryAfter});continue;}
     const due=[];for(const [wsid,w] of Object.entries(state.workspaces))for(const t of w.tasks)if(!t.done&&t.reminderAt!==null&&t.remindedAt===null&&t.reminderAt<=now)due.push({wsid,t});
     for(const {wsid,t} of due.slice(0,5)){
-      let claimed=false;await mutate(s=>{const current=s.workspaces[wsid].tasks.find(x=>x.id===t.id);if(s.prefs.remindersEnabled&&current&&!current.done&&current.reminderAt===t.reminderAt&&current.remindedAt===null){current.remindedAt=now;claimed=true;}});
+      let claimed=false;await mutate(s=>{const current=s.workspaces[wsid]?.tasks.find(x=>x.id===t.id);if(s.prefs.remindersEnabled&&current&&!current.done&&current.reminderAt===t.reminderAt&&current.remindedAt===null){current.remindedAt=now;claimed=true;}});
       if(!claimed)continue;
       try{await chrome.notifications.create('task:'+wsid+':'+t.id,{type:'basic',iconUrl:'assets/icons/icon128.png',title:'Sebams · '+t.list,message:t.text,contextMessage:t.dueDate?'Due '+t.dueDate:'Task reminder',silent:true});}
-      catch(error){reminderRetryAfter=Date.now()+60000;await mutate(s=>{const current=s.workspaces[wsid].tasks.find(x=>x.id===t.id);if(current?.remindedAt===now)current.remindedAt=null;});break;}
+      catch(error){reminderRetryAfter=Date.now()+60000;await mutate(s=>{const current=s.workspaces[wsid]?.tasks.find(x=>x.id===t.id);if(current?.remindedAt===now)current.remindedAt=null;});break;}
     }
     state=getState();const pending=Object.values(state.workspaces).flatMap(w=>w.tasks).filter(t=>!t.done&&t.reminderAt!==null&&t.remindedAt===null);
     if(pending.length)await chrome.alarms.create(TASKS,{when:Math.max(Date.now()+60000,Math.min(...pending.map(t=>t.reminderAt)))});else await chrome.alarms.clear(TASKS);

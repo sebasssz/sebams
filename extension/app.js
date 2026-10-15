@@ -14,6 +14,9 @@ import { bridgeRequest, requestBridgeAccess, taskPrompt } from './lib/ai.js';
 import {connectChatGPT,disconnectChatGPT,CHATGPT_ORIGIN} from './lib/chatgpt.js';
 import {getChatGPTConnection,resolveChatGPTConflict} from './lib/store.js';
 import {renderFeedback} from './lib/feedback.js';
+import {renderProfiles} from './lib/profile-ui.js';
+import {profileName,profileChoices} from './lib/profiles.js';
+import {decorateSettings,settingsLabel,createProfilePicker} from './lib/design.js';
 import { putTaskAttachment, getTaskAttachment, removeTaskAttachment, getBridgeConfig, setBridgeConfig, pruneTaskAttachments } from './lib/store.js';
 import { BACKGROUNDS, QUOTES, SEARCH_PROVIDERS } from './lib/content.js';
 import { searchCities, fetchWeather, weatherLabel, requestWeatherAccess, locateCity } from './lib/weather.js';
@@ -25,7 +28,7 @@ let selectedBackground, selectedQuote, backgroundURL, backgroundToken = 0, curre
 let focusEditing = false, focusOriginal = '', toastTimer, noteTimer, notesDirty = false, notesBase = 0, noteWorkspace = '', lastCompletedAt = null, dashboardDay = '';
 let photoAccess=false, photosBusy=false, photosError='', rotationSlot='', backgroundFallbackKey='';
 let linksMode='browse', linksMenu=false;
-let taskTool=null,weekOffset=0,openCommands,lastTaskSyncKey='',reminderInbox;
+let taskTool=null,weekOffset=0,openCommands,lastTaskSyncKey='',reminderInbox,openProfiles;
 let taskDetailId=null, bridgeConfig={token:''}, bridgeStatus='', bridgeBusy=false, chatGPTConfig={enabled:false,userId:'',nonce:'',conflicts:[],lastSyncAt:0,status:'Not connected.'},chatGPTBusy=false;
 let updatePrefs={autoCheck:false,lastCheckedAt:0,availableVersion:''},updateResult=null,updateStatus='',updateBusy=false,updateSource=null,updateSourceStatus='';
 const taskDrafts=new Map();
@@ -62,6 +65,7 @@ async function openPanel(name) {
   linksMode='browse';linksMenu=false;
   panel.classList.toggle('compact', ['notes', 'habits', 'timer', 'weather'].includes(name));
   panel.classList.toggle('tasks-panel', name === 'tasks');
+  panel.classList.toggle('settings-panel', name === 'settings');
   panel.classList.toggle('links-panel', name === 'links');
   panel.classList.remove('links-expanded');
   renderPanel(); panel.append($('toast')); if (!panel.open) panel.showModal();
@@ -76,14 +80,15 @@ function renderPanel() {
   const previous = body.contains(active) ? { id: active.id, label: active.getAttribute('aria-label'), text: active.textContent, tag: active.tagName, index: [...body.querySelectorAll(selector)].indexOf(active) } : null;
   const matches = item => previous && (previous.label ? item.getAttribute('aria-label') === previous.label : item.tagName === previous.tag && item.textContent === previous.text);
   if (previous) previous.ordinal = [...body.querySelectorAll(selector)].filter(matches).indexOf(active);
-  const scroll = panel.scrollTop;
+  const scroll = panel.scrollTop, settingsScroll=body.querySelector('.settings-content')?.scrollTop||0;
   const disclosures=[...body.querySelectorAll('details')].map(node=>({label:node.querySelector('summary')?.textContent,open:node.open}));
   const taskScroll = body.querySelector('.task-list')?.scrollTop || 0, navigationScroll = body.querySelector('.task-navigation')?.scrollTop || 0;
   const viewScroll = body.querySelector('.task-smart-views')?.scrollLeft || 0, collectionScroll = body.querySelector('.task-collections')?.scrollLeft || 0;
-  $('panel-title').textContent = ({ settings: 'Make it yours', backgrounds: 'A change of scenery', quotes: 'Words to carry with you', tasks: 'Tasks', links: 'Links', weather: 'A glance outside', timer: 'Make space for focus', notes: 'A place for your thoughts', habits: 'Small steps, every day' })[panelName];
-  $('panel-kicker').textContent = `${state.workspace.toUpperCase()} · SEBAMS`;
+  $('panel-title').textContent = ({ settings: 'Settings', backgrounds: 'A change of scenery', quotes: 'Words to carry with you', tasks: 'Tasks', links: 'Links', weather: 'A glance outside', timer: 'Make space for focus', notes: 'A place for your thoughts', habits: 'Small steps, every day' })[panelName];
+  $('panel-kicker').textContent = panelName==='settings'?'YOUR SPACE, YOUR WAY':'SEBAMS';
   body.replaceChildren();
   ({ settings: renderSettings, backgrounds: renderBackgrounds, quotes: renderQuotes, tasks: renderTasks, links: renderLinks, weather: renderWeatherPanel, timer: renderTimerPanel, notes: renderNotes, habits: renderHabits })[panelName]();
+  if(panelName==='settings'){decorateSettings(body,settingsTab);body.querySelector('.settings-content').scrollTop=settingsScroll;}
   const used=new Set();for(const node of body.querySelectorAll('details')){const index=disclosures.findIndex((old,i)=>!used.has(i)&&old.label===node.querySelector('summary')?.textContent);if(index>=0){node.open=disclosures[index].open;used.add(index);}}
   if(panelName==='tasks'){body.querySelector('.task-list').scrollTop=taskScroll;body.querySelector('.task-navigation').scrollTop=navigationScroll;body.querySelector('.task-smart-views').scrollLeft=viewScroll;body.querySelector('.task-collections').scrollLeft=collectionScroll;}
   if (previous) {
@@ -136,6 +141,7 @@ function renderClock() {
 }
 function renderDashboard() {
   dashboardDay = localDay();
+  $('profile-name').textContent=profileName(workspace(),state.workspace);$('profile-initial').textContent=profileName(workspace(),state.workspace).slice(0,1).toUpperCase();$('profile-open').dataset.profileColor=workspace().color;$('profile-open').setAttribute('aria-label','Current profile: '+profileName(workspace(),state.workspace)+'. Switch profile');
   applyAppearance(); renderClock(); run(renderBackground)();
   const w = workspace().widgets;
   $('links-open').hidden = !w.links; renderPinnedLinks();
@@ -188,19 +194,19 @@ async function updateWeather(force = false) {
   finally { weatherBusy = false; renderWeatherSummary(); if (panelName === 'weather') renderPanel(); }
 }
 function renderSettings() {
-  body.append(el('nav', { class: 'tabs', 'aria-label': 'Settings categories' }, ['general', 'appearance', 'workspace', 'chatgpt', 'updates', 'suggestions', 'data'].map(tab => btn(tab==='chatgpt'?'ChatGPT':tab[0].toUpperCase() + tab.slice(1), async () => { settingsTab = tab;if(tab==='chatgpt')chatGPTConfig=await getChatGPTConnection();if(tab==='updates'){updatePrefs=await getUpdatePreferences();await loadUpdateSource();}renderPanel(); }, settingsTab === tab ? 'selected' : '', { 'aria-pressed': settingsTab === tab }))));
+  body.append(el('nav', { class: 'tabs', 'aria-label': 'Settings categories' }, ['general', 'appearance', 'workspace', 'chatgpt', 'updates', 'suggestions', 'data'].map(tab => btn(settingsLabel(tab), async () => { settingsTab = tab;if(tab==='chatgpt')chatGPTConfig=await getChatGPTConnection();if(tab==='updates'){updatePrefs=await getUpdatePreferences();await loadUpdateSource();}if(body.querySelector('.settings-content'))body.querySelector('.settings-content').scrollTop=0;renderPanel(); }, settingsTab === tab ? 'selected' : '', { 'data-category':tab,'aria-pressed': settingsTab === tab }))));
   if (settingsTab === 'general') {
     body.append(el('div', { class: 'stack' }, field('What should we call you?', input(state.prefs.name, { maxlength: 60, onchange: run(e => save(s => { s.prefs.name = e.target.value.trim(); })) })), el('div', { class: 'field-grid' }, field('Clock format', select(String(state.prefs.clock24), [['false', '12-hour · 2:30 PM'], ['true', '24-hour · 14:30']], e => save(s => { s.prefs.clock24 = e.target.value === 'true'; }))), field('Search provider', select(state.prefs.searchProvider, Object.entries(SEARCH_PROVIDERS).map(([id, p]) => [id, p.label]), e => save(s => { s.prefs.searchProvider = e.target.value; }))))));
     body.append(toggle('Show the date', state.prefs.showDate, value => save(s => { s.prefs.showDate = value; })), help('Search opens your chosen provider only when you submit. Your address bar stays ready when a new tab opens.'));
-    const section = el('section', { class: 'section widget-grid' }, el('h3', {}, 'Visible in this workspace'));
+    const section = el('section', { class: 'section widget-grid' }, el('h3', {}, 'Show on this profile'));
     for (const [id, label] of [['links', 'Quick links and pins'], ['search', 'Web search'], ['weather', 'Weather'], ['tasks', 'Tasks'], ['notes', 'Quick notes'], ['timer', 'Focus timer'], ['habits', 'Habits'], ['focus', 'Main daily focus'], ['backgrounds', 'Background selector'], ['backgroundFavorite', 'Background favorite button']]) section.append(toggle(label, workspace().widgets[id], value => save(s => { s.workspaces[s.workspace].widgets[id] = value; })));
     renderReminderSettings();section.append(toggle('Daily quote', state.prefs.showQuotes, value => save(s => { s.prefs.showQuotes = value; }))); body.append(section);
   } else if (settingsTab === 'appearance') {
     body.append(field('Background dimming', input(state.prefs.dimming, { type: 'range', min: 20, max: 80, step: 1, oninput: e => { document.documentElement.style.setProperty('--dimming', e.target.value / 100); $('dim-value').textContent = `${e.target.value}%`; }, onchange: run(e => save(s => { s.prefs.dimming = Number(e.target.value); })) })), el('p', { id: 'dim-value', class: 'help' }, `${state.prefs.dimming}%`), help('A permanent soft shading layer keeps controls readable. Increase dimming for bright scenes.'), field('Background changes', select(state.prefs.backgroundMode, [['daily', 'A different scene each day'], ['favorites', 'Rotate my favorites daily'], ['manual', 'Keep my chosen scene']], e => save(s => { s.prefs.backgroundMode = e.target.value; }))), row(btn('Choose a background', () => openPanel('backgrounds')), btn('Choose quotes', () => openPanel('quotes'))));
     body.append(el('section',{class:'random-background-control'},btn([icon('shuffle'),photosBusy?'Choosing a photo…':'Random online background'],randomOnlineBackground,'secondary',{'aria-label':'Random online background',disabled:photosBusy}),help(photosBusy?'Loading a photograph…':photosError||'Pick a random photo from the free online collection and keep it as your background.')));
-    body.append(rotationControl(),el('section',{class:'section appearance-grid'},appearanceSlider('Panel opacity','panelOpacity',35,90,'%'),appearanceSlider('Background blur','backgroundBlur',0,12,' px'),appearanceSlider('Clock size','clockSize',70,120,'%')),field('Pinned shortcuts',select(state.prefs.pinStyle,[['icons','Website logo only'],['names','Website name only'],['both','Logo and name']],e=>save(s=>{s.prefs.pinStyle=e.target.value;s.prefs.pinLabels=e.target.value!=='icons';}))),toggle('Background behind shortcuts',state.prefs.pinGlass,value=>save(s=>{s.prefs.pinGlass=value;})),toggle('Online website icons',state.prefs.onlineSiteIcons,value=>save(s=>{s.prefs.onlineSiteIcons=value;})),help('Website icons come from Google’s favicon service using the website domain only. Turn this off to use icons already saved by Chrome.'),btn('Reset appearance',async()=>{await save(s=>{for(const key of ['panelOpacity','panelBlur','backgroundBlur','clockSize','pinLabels'])s.prefs[key]=APPEARANCE_DEFAULTS[key];s.prefs.pinStyle='icons';s.prefs.pinGlass=false;});renderPanel();},'text-button'));
+    body.append(rotationControl(),el('section',{class:'section appearance-grid'},appearanceSlider('Panel opacity','panelOpacity',35,100,'%'),appearanceSlider('Background blur','backgroundBlur',0,12,' px'),appearanceSlider('Clock size','clockSize',70,120,'%')),field('Pinned shortcuts',select(state.prefs.pinStyle,[['icons','Website logo only'],['names','Website name only'],['both','Logo and name']],e=>save(s=>{s.prefs.pinStyle=e.target.value;s.prefs.pinLabels=e.target.value!=='icons';}))),toggle('Background behind shortcuts',state.prefs.pinGlass,value=>save(s=>{s.prefs.pinGlass=value;})),toggle('Online website icons',state.prefs.onlineSiteIcons,value=>save(s=>{s.prefs.onlineSiteIcons=value;})),help('Website icons come from Google’s favicon service using the website domain only. Turn this off to use icons already saved by Chrome.'),btn('Reset appearance',async()=>{await save(s=>{for(const key of ['panelOpacity','panelBlur','backgroundBlur','clockSize','pinLabels'])s.prefs[key]=APPEARANCE_DEFAULTS[key];s.prefs.pinStyle='icons';s.prefs.pinGlass=false;});renderPanel();},'text-button'));
   } else if (settingsTab === 'workspace') {
-    body.append(help('Each workspace remembers its own links, lists, tasks, notes, habits, and visible widgets. Your daily focus travels with you.'), el('div', { class: 'stack' }, ['personal', 'work', 'study'].map(id => btn(`${id[0].toUpperCase() + id.slice(1)}${state.workspace === id ? ' · current' : ''}`, async () => { await save(s => { s.workspace = id; }); taskList = null; taskDateFilter = 'all'; renderPanel(); }, state.workspace === id ? 'primary' : 'secondary'))));
+    renderProfiles({body,state,save,render:renderPanel,toast,beforeChange:saveBeforeUpdate});
     if (state.focusArchive.length) { body.append(el('section', { class: 'section' }, el('h3', {}, 'Past focus'), el('ul', { class: 'list' }, state.focusArchive.slice(-20).reverse().map(item => el('li', { class: 'list-item' }, el('div', { class: 'item-main' }, el('strong', {}, item.text), el('small', {}, `${item.day} · ${item.done ? 'Completed' : 'Archived'}`))))))); }
   } else if(settingsTab==='chatgpt') {
     renderChatGPTSettings();
@@ -233,7 +239,7 @@ function renderUpdateSource(){
 async function saveBeforeUpdate(){
   if(notesDirty)await flushNotes();
   const dirty=[...taskDrafts].filter(([,draft])=>draft.details!==draft.base);
-  if(dirty.length){await save(s=>{for(const [key,draft] of dirty){const [wsid,id]=key.split('/'),task=s.workspaces[wsid]?.tasks.find(t=>t.id===id);if(!task||task.details!==draft.base)throw Error('A task changed in another tab. Review your draft before updating.');task.details=draft.details;}});for(const [,draft] of dirty)draft.base=draft.details;}
+  if(dirty.length){await save(s=>{for(const [key,draft] of dirty){const [wsid,id]=key.split('/'),task=(s.workspaces[wsid]||s.profileTrash.find(item=>item.id===wsid)?.workspace)?.tasks.find(t=>t.id===id);if(!task||task.details!==draft.base)throw Error('A task changed in another tab. Review your draft before updating.');task.details=draft.details;}});for(const [,draft] of dirty)draft.base=draft.details;}
 }
 function syncTaskAlarm(){if(!state)return;const key=JSON.stringify([state.prefs.remindersEnabled,...Object.values(state.workspaces).flatMap(w=>w.tasks.map(t=>[t.id,t.done,t.reminderAt,t.remindedAt]))]);if(key===lastTaskSyncKey)return;lastTaskSyncKey=key;globalThis.chrome?.runtime?.sendMessage({type:'task-sync'}).catch(()=>{lastTaskSyncKey='';});}
 function renderReminderSettings(){
@@ -258,8 +264,8 @@ function renderChatGPTSettings(){
   body.append(el('section',{class:'stack chatgpt-settings'},el('span',{class:'eyebrow'},'SEBAMS + CHATGPT'),el('h3',{},'Your tasks, in the conversation'),help('Connect the Sebams plugin in ChatGPT to ask what is due tomorrow, create tasks with a date and priority, or mark them complete. ChatGPT supplies the AI; no AI API key or Sebams Bridge is needed.'),help('Connecting privately synchronizes task titles, details, lists, dates, priorities and completion with your ChatGPT account. Photos, backgrounds and general notes remain on this device.'),row(btn(chatGPTConfig.enabled?'Reconnect ChatGPT':'Connect ChatGPT',async()=>{await connectChatGPT();chatGPTConfig=await getChatGPTConnection();renderPanel();},'primary'),chatGPTConfig.enabled?btn('Sync now',async()=>{chatGPTBusy=true;renderPanel();try{const result=await chrome.runtime.sendMessage({type:'chatgpt-sync'});if(!result?.ok)throw Error('Open the connection page and try again.');}finally{chatGPTBusy=false;chatGPTConfig=await getChatGPTConnection();renderPanel();}},'secondary',{disabled:chatGPTBusy}):null),el('p',{class:'bridge-status',role:'status'},chatGPTConfig.status)));
   if(chatGPTConfig.enabled){const page=CHATGPT_ORIGIN+'/connect?extension='+chrome.runtime.id+'&nonce='+encodeURIComponent(chatGPTConfig.nonce);body.append(row(el('a',{href:page,target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open connection page'),btn('Disconnect ChatGPT',async()=>{await disconnectChatGPT();chatGPTConfig=await getChatGPTConnection();renderPanel();},'text-button')));if(chatGPTConfig.lastSyncAt)body.append(help('Last synced: '+new Date(chatGPTConfig.lastSyncAt).toLocaleString()));}
   body.append(el('section',{class:'section stack'},el('h3',{},'Use the Sebams plugin'),help('Connect your own account in ChatGPT → Plugins → + → Add custom MCP server. Name it Sebams and use the server URL below with OAuth authentication. Then install your plugin and select @Sebams in a chat. You do not need the extension owner to approve your account.'),field('MCP server URL',input(CHATGPT_ORIGIN+'/mcp',{readonly:true})),btn('Copy server URL',async()=>{await navigator.clipboard.writeText(CHATGPT_ORIGIN+'/mcp');toast('Server URL copied. Add it in ChatGPT → Plugins.');},'secondary'),help('If you already have Sebams installed, keep using it. Each account has its own tasks. ChatGPT may still ask you to install or authorize the connection; those prompts are controlled by ChatGPT.'),el('p',{class:'help'},'“What tasks do I have tomorrow?”'),el('p',{class:'help'},'“Add reviewing maths for tomorrow with high priority.”'),el('a',{href:'https://chatgpt.com/',target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open ChatGPT')));
-  for(const conflict of chatGPTConfig.conflicts||[])body.append(el('section',{class:'section stack'},el('h4',{},'Choose which change to keep'),help(conflict.local?.text||conflict.remote?.text||'Task lists'),el('p',{},'Sebams: '+(conflict.local?describe(conflict.local):'Removed')),el('p',{},'ChatGPT: '+(conflict.remote?describe(conflict.remote):'Removed')),row(btn('Keep Sebams',()=>choose(conflict.key,'local'),'secondary'),btn('Keep ChatGPT',()=>choose(conflict.key,'cloud'),'secondary'))));
-  function describe(value){return value.type==='workspace'?value.lists.join(', '):[value.text,value.list,value.dueDate||'No date',value.priority+' priority',value.done?'Completed':'Unfinished',value.details].filter(Boolean).join(' · ');}
+  for(const conflict of chatGPTConfig.conflicts||[])body.append(el('section',{class:'section stack'},el('h4',{},'Choose which change to keep'),help(conflict.local?.text||conflict.remote?.text||conflict.local?.name||conflict.remote?.name||'Profile and task lists'),el('p',{},'Sebams: '+(conflict.local?describe(conflict.local):'Removed')),el('p',{},'ChatGPT: '+(conflict.remote?describe(conflict.remote):'Removed')),row(btn('Keep Sebams',()=>choose(conflict.key,'local'),'secondary'),btn('Keep ChatGPT',()=>choose(conflict.key,'cloud'),'secondary'))));
+  function describe(value){return value.type==='workspace'?(value.name?value.name+' · ':'')+value.lists.join(', '):[value.text,value.list,value.dueDate||'No date',value.priority+' priority',value.done?'Completed':'Unfinished',value.details].filter(Boolean).join(' · ');}
   async function choose(key,choice){await resolveChatGPTConflict(key,choice);await chrome.runtime.sendMessage({type:'chatgpt-sync'});chatGPTConfig=await getChatGPTConnection();renderPanel();}
 }
 function rotationControl(){return field('Rotation frequency',select(state.prefs.backgroundCadence,[['daily','Every day'],['hourly','Every hour'],['tab','Every new tab']],e=>save(s=>{s.prefs.backgroundCadence=e.target.value;})));}
@@ -456,7 +462,7 @@ function renderLinks() {
   panel.classList.toggle('links-scrolling',linksMode!=='browse'||w.links.length>12);
   const setMode=mode=>{linksMode=mode;linksMenu=false;editingLink=null;renderPanel();if(mode==='add')body.querySelector('[aria-label="Link name"]').focus();};
   body.append(el('header',{class:'links-heading'},el('div',{},icon('external'),el('h2',{},'Links')),linksMode!=='browse'?ibtn('arrow','Back to links',()=>setMode('browse'),{class:'icon-button small links-back'}):null,ibtn('plus','New link',()=>setMode('add'),{class:'icon-button small'}),ibtn('more','Links options',e=>{linksMenu=!linksMenu;body.querySelector('.links-menu').hidden=!linksMenu;e.currentTarget.setAttribute('aria-expanded',String(linksMenu));},{class:'icon-button small','aria-expanded':String(linksMenu)})));
-  body.append(el('section',{class:'links-menu','aria-label':'Links options',hidden:!linksMenu},btn('Manage links',()=>setMode('manage'),'text-button'),linksMode==='manage'?null:field('Workspace',select(state.workspace,[['personal','Personal'],['work','Work'],['study','Study']],async e=>{await save(s=>{s.workspace=e.target.value;});taskList=null;taskDateFilter='all';setMode('browse');},{'aria-label':'Workspace'}))));
+  body.append(el('section',{class:'links-menu','aria-label':'Links options',hidden:!linksMenu},btn('Manage links',()=>setMode('manage'),'text-button'),linksMode==='manage'?null:field('Profile',select(state.workspace,profileChoices(state),async e=>{await save(s=>{s.workspace=e.target.value;});taskList=null;taskDateFilter='all';setMode('browse');},{'aria-label':'Profile'}))));
   const groups = [...new Set(w.links.map(l => l.folder || 'Quick links'))];
   if(linksMode==='browse'){
     const navigation=el('nav',{class:'quick-links','aria-label':'Saved websites'});body.append(navigation);
@@ -466,7 +472,7 @@ function renderLinks() {
     return;
   }
   if(linksMode==='manage'){
-  body.append(row(el('span', { class: 'help' }, 'Workspace'), select(state.workspace, [['personal','Personal'],['work','Work'],['study','Study']], async e => { const id = e.target.value; await save(s => { s.workspace = id; }); taskList = null; taskDateFilter = 'all'; renderPanel(); }, { 'aria-label': 'Workspace' })), help('Pin a link to open it directly from your dashboard. Up to eight pins per workspace.'));
+  body.append(row(el('span', { class: 'help' }, 'Workspace'), select(state.workspace, profileChoices(state), async e => { const id = e.target.value; await save(s => { s.workspace = id; }); taskList = null; taskDateFilter = 'all'; renderPanel(); }, { 'aria-label': 'Profile' })), help('Pin a link to open it directly from your dashboard. Up to eight pins per workspace.'));
   for (const group of groups) {
     const section = el('section', { class: 'section' }, el('h3', {}, group)), list = el('ul', { class: 'list' });
     const matches = l => (l.folder || 'Quick links') === group, grouped = w.links.filter(matches); section.append(list); body.append(section);
@@ -530,12 +536,12 @@ function renderTimerPanel() {
 function renderNotes() {
   noteWorkspace = state.workspace; notesBase = workspace().notesRevision; notesDirty = false;
   const textarea = el('textarea', { id: 'notes-text', maxlength: 20000, placeholder: 'An idea, a reminder, a little room to think…', 'aria-label': 'Quick notes', oninput: () => { notesDirty = true; $('notes-status').textContent = 'Saving…'; clearTimeout(noteTimer); noteTimer = setTimeout(run(flushNotes), 450); } }, workspace().notes);
-  body.append(textarea, el('div', { class: 'row between' }, el('p', { id: 'notes-status', class: 'note-status', 'aria-live': 'polite' }, 'Saved on this device'), btn('Save now', flushNotes, 'text-button')), help('Notes are separate for each workspace. If another tab edits this note, Sebams keeps your draft and asks you to review it.'));
+  body.append(textarea, el('div', { class: 'row between' }, el('p', { id: 'notes-status', class: 'note-status', 'aria-live': 'polite' }, 'Saved on this device'), btn('Save now', flushNotes, 'text-button')), help('Notes are separate for each profile. If another tab edits this note, Sebams keeps your draft and asks you to review it.'));
 }
 async function flushNotes() {
   clearTimeout(noteTimer); if (!notesDirty || !$('notes-text')) return;
   const text = $('notes-text').value, wsid = noteWorkspace, expected = notesBase;
-  try { await save(s => { const w = s.workspaces[wsid]; if (w.notesRevision !== expected) throw new Error('Your note changed in another tab. Your draft is still here. Copy it before reopening notes.'); w.notes = text; w.notesRevision++; }); notesBase = state.workspaces[wsid].notesRevision; notesDirty = false; if ($('notes-status')) $('notes-status').textContent = 'Saved on this device'; }
+  try { await save(s => { const w = s.workspaces[wsid]||s.profileTrash.find(item=>item.id===wsid)?.workspace; if (!w||w.notesRevision !== expected) throw new Error('Your note changed in another tab. Your draft is still here. Copy it before reopening notes.'); w.notes = text; w.notesRevision++; }); notesBase = (state.workspaces[wsid]||state.profileTrash.find(item=>item.id===wsid)?.workspace).notesRevision; notesDirty = false; if ($('notes-status')) $('notes-status').textContent = 'Saved on this device'; }
   catch (e) {
     if ($('notes-status')) $('notes-status').textContent = e.message;
     if (!$('notes-conflict')) body.append(btn('Save draft & review', () => { downloadJSON({ workspace: wsid, draft: $('notes-text')?.value ?? text }, 'sebams-note-draft.json'); notesDirty = false; renderPanel(); }, 'primary', {id:'notes-conflict'}));
@@ -551,6 +557,7 @@ function renderHabits() {
 async function archiveFocus() { await save(s => { if (s.focus.text) s.focusArchive.push({ ...s.focus }); s.focusArchive = s.focusArchive.slice(-366); s.focus = { text: '', day: localDay(), done: false, pending: false }; }); focusEditing = false; $('focus-input').value = ''; renderDashboard(); }
 function installHandlers() {
   for (const name of ['settings', 'links', 'tasks', 'timer', 'notes', 'habits', 'weather']) $(`${name}-open`).addEventListener('click', () => openPanel(name));
+  openProfiles=createProfilePicker({getState:()=>state,choose:async id=>{await saveBeforeUpdate();await save(s=>{if(!Object.hasOwn(s.workspaces,id))throw Error('This profile was removed.');s.workspace=id;});taskList=null;taskDateFilter='all';taskDetailId=null;if(panelName)renderPanel();},manage:async()=>{settingsTab='workspace';await openPanel('settings');},toast});$('profile-open').onclick=openProfiles;
   $('background-open').onclick = () => openPanel('backgrounds'); $('quote-open').onclick = () => openPanel('quotes'); $('panel-close').onclick = closePanel;
   $('background-favorite').onclick = run(() => save(s => toggleID(s.prefs.favoriteBackgrounds, selectedBackground.id)));
   $('background-next').onclick=run(nextBackground);
@@ -593,10 +600,10 @@ async function boot() {
   globalThis.chrome?.permissions?.onRemoved?.addListener(()=>{hasPhotoAccess().then(access=>{photoAccess=access;if(panelName==='backgrounds')renderPanel();}).catch(()=>{});});
   lastCompletedAt = state.timer.completedAt || 0; installHandlers();installCommands();
   reminderInbox=installReminderInbox({getState:()=>state,save,run,toast,openTask:async(wsid,id)=>{await save(s=>{s.workspace=wsid;});await openTaskById(id);},canShow:()=>state.onboarded&&!document.hidden&&!state.timer.focusView&&!focusEditing&&!notesDirty&&![...taskDrafts.values()].some(d=>d.details!==d.base)&&!document.querySelector('dialog[open]')&&!['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName)});
-  subscribe(next => { state = next; syncTaskAlarm();renderDashboard(); if (panelName && panel.open && !notesDirty && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) renderPanel(); });
+  subscribe(next => { if(state.workspace!==next.workspace){taskList=null;taskDateFilter='all';taskDetailId=null;}state = next; syncTaskAlarm();renderDashboard(); if (panelName && panel.open && !notesDirty && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) renderPanel(); });
   renderDashboard(); syncTimerAlarm();syncTaskAlarm(); updateWeather(); setInterval(run(tick), 1000); setInterval(() => updateWeather(), 30 * 60 * 1000);
   chrome.runtime.sendMessage({type:'chatgpt-sync'}).catch(()=>{});setInterval(async()=>{if(panelName==='settings'&&settingsTab==='chatgpt'&&!chatGPTBusy){chatGPTConfig=await getChatGPTConnection();renderPanel();}},10000);
-  const deepLink=new URLSearchParams(location.search);if(deepLink.has('task')){const wsid=deepLink.get('workspace');if(['personal','work','study'].includes(wsid))await save(s=>{s.workspace=wsid;});await openTaskById(deepLink.get('task'));}
+  const deepLink=new URLSearchParams(location.search);if(deepLink.has('task')){const wsid=deepLink.get('workspace');if(Object.hasOwn(state.workspaces,wsid))await save(s=>{s.workspace=wsid;});await openTaskById(deepLink.get('task'));}
   else await reminderInbox.show();
   pruneTaskAttachments().catch(()=>{});setInterval(()=>pruneTaskAttachments().catch(()=>{}),60000);
 }

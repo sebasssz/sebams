@@ -1,5 +1,7 @@
 # Sebams
 
+Version **2.0.0** reorganizes the dashboard and every panel around a consistent, neutral dark design. Settings has sidebar navigation; the new profile picker and **Settings → Profiles** create, rename, color, delete and restore up to 12 active profiles. Existing data migrates to schema 7. Deleted profiles and their reference photos remain recoverable on this device until explicitly erased, and are included in backups. ChatGPT supports custom profile names and task lists. See the Spanish [2.0 guide](GUIA-2.0.md).
+
 Version **1.10.0** adds **Settings → Suggestions**: write an idea or problem and review/send it as a GitHub issue. The connector supports access for other ChatGPT accounts without the extension owner approving each person, while task records remain isolated by account. See the Spanish [1.10 guide](GUIA-1.10.md).
 
 Version **1.9.0** replaces the integrated Gemini assistant with a private Sebams plugin for ChatGPT. Read or create tasks from a conversation and synchronize their text, details, dates, priorities and completion. This optional connection needs no model API key or Sebams Bridge. Photos remain local reference material. See the Spanish [1.9 guide](GUIA-1.9.md).
@@ -14,7 +16,7 @@ Pinned shortcuts support logo-only, name-only or both, an optional dark surface,
 
 A calm, local-first new tab for Chrome. Original code, an original Sebams mark, three generated scenic backgrounds, and an optional online landscape collection. The composition follows the familiar clock, greeting, focus, weather, and corner tools in the [official Momentum reference](https://chromewebstore.google.com/detail/momentum/laookkfknpbbblfpciffpaejjkokdgca).
 
-## Update to 1.10.0
+## Update to 2.0.0
 
 Replace the files in your existing Sebams folder with this release, then click **Reload** on its card in `chrome://extensions` and open a new tab. Keep the same folder location and installed extension to retain its local data. Existing tasks, dates, notes, pinned links, settings, images, and backups upgrade automatically. Version 1.0 tasks start without a date and its links start unpinned. Chrome may ask you to accept the added context-menu capability. Notification permission is requested separately for optional desktop notifications. Opening reminders need no notification permission. Export a backup before moving the extension to a different folder or computer.
 
@@ -50,7 +52,7 @@ The dashboard, task details and photo attachments need no build, account, API ke
 - **Focus** opens the timer. Choose work/break lengths, start, pause, resume, reset, or switch sessions. Focus view hides secondary widgets. Ended sessions wait for you to start the next one. Sound is optional and requires an active Sebams tab; Chrome may suppress sound until you interact with the page.
 - The note icon opens autosaving **Quick notes**. If two tabs edit the same note, the older editor retains its draft and offers a downloaded copy before loading the latest saved note.
 - The leaf icon opens up to eight gentle daily **Habits** per workspace. Checking a habit records today's progress; it starts unchecked on the next day.
-- **Settings → Workspace** switches Personal, Work, and Study. Each remembers links, lists, tasks, notes, habits, and widget visibility. Your name, scenery preferences, daily focus, and timer are shared.
+- **Settings → Profiles** manages up to 12 active profiles with names and colors. Use the top-left profile button to switch. Deletion asks first and keeps local content in Recently deleted; restoration retains photos. Permanent deletion requires a separate confirmation. Your name, scenery preferences, daily focus, and timer remain shared on this device.
 - **Settings → Data** exports a backup including uploaded images. Import replaces Sebams data, validates its structure and images before saving, and offers immediate undo. Undo refuses to replace changes made after the restore. Treat backups as private files.
 
 Escape closes a panel and returns focus to its control. Keyboard focus is visible, forms have descriptive labels, and task/link reordering has button alternatives to dragging. Initial page loading never focuses a dashboard field, preserving normal address-bar behavior.

@@ -7,6 +7,7 @@
   <title>Sebams · A little space to focus</title>
   <link rel="icon" href="assets/icons/icon32.png">
   <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="design.css">
   <script type="module" src="app.js"></script>
 </head>
 <body>
@@ -41,6 +42,7 @@
   <div class="shade" aria-hidden="true"></div>
   <header class="topbar secondary-widget">
     <div class="top-left"><div class="top-controls">
+      <button id="profile-open" class="profile-switch" type="button" aria-haspopup="dialog" aria-label="Switch profile"><span id="profile-initial" class="profile-avatar" aria-hidden="true">P</span><span id="profile-name">Personal</span><span class="profile-chevron" aria-hidden="true">⌄</span></button>
       <button id="links-open" class="quiet" aria-haspopup="dialog"><svg><use href="#i-external"/></svg><span>Links</span></button>
       <form id="search-form" class="search" role="search"><svg aria-hidden="true"><use href="#i-search"/></svg><input id="search-input" type="search" aria-label="Search the web" placeholder="Search the web" autocomplete="off"><button id="search-provider" type="button" title="Choose search provider">Google</button></form><button id="search-commands" class="icon-button secondary-widget" type="button" aria-label="Search tasks, lists and links" title="Search Sebams · Ctrl+K"><svg aria-hidden="true"><use href="#i-search"/></svg></button></div><nav id="pinned-links" class="pinned-links" aria-label="Pinned websites" hidden></nav>
     </div>
@@ -62,7 +64,7 @@
   <footer class="bottom-bar secondary-widget">
     <div class="bottom-left"><button id="settings-open" class="icon-button" aria-label="Open settings"><svg><use href="#i-settings"/></svg></button><div class="scene-info-group"><button id="background-open" class="scene-info" aria-label="Choose a background"><svg class="scene-icon" aria-hidden="true"><use href="#i-image"/></svg><span id="scene-title">Alpine stillness</span><small id="scene-subtitle">A new perspective, every day</small></button><a id="photo-credit" class="photo-credit" href="https://picsum.photos/" target="_blank" rel="noopener noreferrer" hidden></a></div><button id="background-favorite" class="icon-button" aria-label="Favorite background"><svg><use href="#i-heart"/></svg></button><button id="background-next" class="icon-button" aria-label="Next background" title="Next background"><svg><use href="#i-arrow"/></svg></button></div>
     <section id="quote" class="quote" aria-label="Daily quote"><p id="quote-text"></p><div class="quote-details"><span id="quote-author"></span><button id="quote-favorite" class="icon-button small" aria-label="Favorite quote"><svg><use href="#i-heart"/></svg></button><button id="quote-open" class="text-button">Quotes</button></div></section>
-    <nav class="tools" aria-label="Productivity tools"><button id="timer-open" class="quiet" aria-label="Focus timer"><svg><use href="#i-timer"/></svg><span id="timer-pill">Focus</span></button><button id="notes-open" class="icon-button" aria-label="Quick notes"><svg><use href="#i-note"/></svg></button><button id="habits-open" class="icon-button" aria-label="Daily habits"><svg><use href="#i-habit"/></svg></button><button id="tasks-open" class="quiet"><span>Tasks</span><span id="task-count" class="count">0</span></button></nav>
+    <nav class="tools" aria-label="Productivity tools"><button id="timer-open" class="quiet" aria-label="Focus timer"><svg><use href="#i-timer"/></svg><span id="timer-pill">Focus</span></button><button id="notes-open" class="icon-button" aria-label="Quick notes"><svg><use href="#i-note"/></svg></button><button id="habits-open" class="icon-button" aria-label="Daily habits"><svg><use href="#i-habit"/></svg></button><button id="tasks-open" class="quiet"><svg aria-hidden="true"><use href="#i-check"/></svg><span>Tasks</span><span id="task-count" class="count">0</span></button></nav>
   </footer>
   <aside id="welcome" class="welcome" hidden aria-label="Welcome to Sebams"><img src="assets/logo.svg" alt="" width="28" height="28"><div><h2>A little space to focus.</h2><p>Welcome to Sebams. Make this moment yours.</p><form id="welcome-form"><label class="sr-only" for="welcome-name">What should we call you?</label><input id="welcome-name" maxlength="60" placeholder="Your name (optional)"><button class="primary" type="submit">Make yourself at home</button></form><button id="welcome-skip" class="text-button">Skip for now · Change anything in settings</button></div></aside>
   <dialog id="panel" aria-labelledby="panel-title"><header class="panel-heading"><div><span id="panel-kicker" class="eyebrow">YOUR SPACE</span><h2 id="panel-title"></h2></div><button id="panel-close" class="icon-button" aria-label="Close panel"><svg><use href="#i-close"/></svg></button></header><div id="panel-body"></div></dialog>

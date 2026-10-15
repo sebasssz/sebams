@@ -1,0 +1,61 @@
+{
+  "results": [
+    {
+      "name": "An existing schema 6 installation migrates without losing content or chosen settings",
+      "status": "pass"
+    },
+    {
+      "name": "Settings has organized navigation and a responsive profile manager",
+      "status": "pass"
+    },
+    {
+      "name": "Create and rename a profile with a stable identity and independent data",
+      "status": "pass"
+    },
+    {
+      "name": "A task reference photo and notes belong to the new profile",
+      "status": "pass"
+    },
+    {
+      "name": "Delete asks first, can be cancelled, and keeps the full profile in Recently deleted",
+      "status": "pass"
+    },
+    {
+      "name": "Backups include deleted profiles and their photos, and restoration retains photo bytes",
+      "status": "pass"
+    },
+    {
+      "name": "ChatGPT sees custom profile names and creates a task in the selected custom list",
+      "status": "pass"
+    },
+    {
+      "name": "Deleting a profile while ChatGPT edits a task offers one profile conflict and cloud choice restores local references",
+      "status": "pass"
+    },
+    {
+      "name": "Remote profile deletion conflicting with a local edit preserves the whole profile until the local choice",
+      "status": "pass"
+    },
+    {
+      "name": "A remote profile deletion with no local edits keeps every local photo and note in Recently deleted",
+      "status": "pass"
+    },
+    {
+      "name": "Permanent removal requires an explicit checkbox and does not affect another profile",
+      "status": "pass"
+    },
+    {
+      "name": "The profile switcher, Tasks, Links and settings remain usable at desktop and phone widths",
+      "status": "pass"
+    },
+    {
+      "name": "Calendar, exam plans, templates, progress and the other dashboard panels remain accessible",
+      "status": "pass"
+    },
+    {
+      "name": "No browser errors",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

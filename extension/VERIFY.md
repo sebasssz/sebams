@@ -1,3 +1,13 @@
+# Sebams 2.0.0: verification
+
+On October 14, 2026, 75 extension unit checks and 9 connector checks passed. Thirty-one focused Chrome scenarios cover the revamp/profiles (14), existing ChatGPT task behavior (11), and suggestions/setup (6). TypeScript and the production service build are checked before publication. Profiles are tested with actual IndexedDB, real photo blobs, backup/import, and an SQLite D1 adapter; no personal browser data is used.
+
+The profile suite covers schema 6 migration, preserved reminder settings, create/rename/stable identity, independent data, recoverable deletion, full backups of deleted profiles and photos, custom-profile MCP task creation, both directions of deletion/edit conflict choice, archive-on-remote-delete, explicit permanent-delete confirmation, profile switching, desktop/mobile views and no page errors. Unit checks also enforce one remaining profile, bounded profile IDs, unique visible names during creation, restoration name collisions and orphan task rejection.
+
+Older clients are rejected with an update message once an account uses profile metadata; they cannot overwrite the new profile state. ChatGPT consent, native optional permissions, screen-reader sessions and other operating systems retain their existing manual verification limits. Publication records separately verify the public service boundary and the exact GitHub update download/install/backup.
+
+## Historical verification
+
 # Sebams 1.10.0: verification
 
 On October 14, 2026, the 70 extension unit checks and 7 connector checks passed. The focused Chrome feedback suite covers six scenarios: accessible fields and empty-form prevention, preserved drafts and correctly encoded GitHub handoff, bug prefixes and invalid/oversized messages, clearing feedback and mobile layout, setup instructions for each account, and no browser errors. It uses an isolated Chrome profile and never submits a real GitHub issue. GitHub may show sign-in before returning to the prepared issue.

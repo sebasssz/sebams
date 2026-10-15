@@ -1,13 +1,13 @@
 {
   "format": "sebams-local-release",
-  "version": "1.10.0",
-  "notes": "Suggestions in Settings open a GitHub draft for the Sebams team. Public ChatGPT connector access lets each person connect their own account without owner approval; tasks remain separate. Includes clearer setup instructions and authenticated MCP task calls.",
-  "publishedAt": "2026-10-15T00:37:49.319Z",
+  "version": "2.0.0",
+  "notes": "Sebams 2.0: a complete neutral dark interface refresh, organized Settings navigation and a profile switcher. Create, rename, color, delete and restore profiles with local photos and backups preserved. ChatGPT supports custom profiles and protects deletion/edit conflicts. Update all connected devices to 2.0.",
+  "publishedAt": "2026-10-15T02:01:24.534Z",
   "files": [
     {
       "path": "app.js",
-      "size": 95604,
-      "sha256": "e18751830948005bcec4ff5bee787ff72e52604e19a2f8e08eec297aeefeec1a"
+      "size": 96800,
+      "sha256": "d08c729a92981a05ef781cbee3b28b54a96433190adf4d18c69317026ccab5b3"
     },
     {
       "path": "ASSETS.md",
@@ -65,6 +65,11 @@
       "sha256": "239d6f7590ff9962339efbb54e1d2dbdc84963e0eb1138bbce0604ce29190113"
     },
     {
+      "path": "design.css",
+      "size": 23369,
+      "sha256": "666216f446e75a51080a0ce647931e397cbda2bafd5b1a1f757f3874ab0dc5a8"
+    },
+    {
       "path": "GUIA-1.10.md",
       "size": 1396,
       "sha256": "07201cdea4a50008b0ee370e3bab14545ccfca50eb3d3fe67102e06d72487983"
@@ -90,6 +95,11 @@
       "sha256": "20aec0b852cf3a8fcf5fcb1c620cf426cf8ef5c9511393b281d4ad971573f45e"
     },
     {
+      "path": "GUIA-2.0.md",
+      "size": 3194,
+      "sha256": "c7f55f2579e1e9c58100feb4ab79832bf779d47d95dac7b0bb872e67c644c2f8"
+    },
+    {
       "path": "lib/ai.js",
       "size": 3003,
       "sha256": "1f94fa41144560db36a97a8720750998540dbef9f76f6e8d24d012e1804ed097"
@@ -106,13 +116,18 @@
     },
     {
       "path": "lib/chatgpt.js",
-      "size": 6437,
-      "sha256": "e8f61e84b235b4882f91f3d051b4ace17c2ba946d5fb25cbbac195b167c58e65"
+      "size": 6471,
+      "sha256": "312d05453e7d3ab7fe9b02ebde403f6a8bd58c3d10b09076bec7d72cf55a95b8"
     },
     {
       "path": "lib/content.js",
       "size": 1277,
       "sha256": "5310ba5f4da07b1e0bfe29fa71e7e424415200ac1d5197a89e1c792cd1edb150"
+    },
+    {
+      "path": "lib/design.js",
+      "size": 3070,
+      "sha256": "275516bfd875eb1f6cf06c9f274d9ba766b747c28f0c64f1a43824245aec8243"
     },
     {
       "path": "lib/favicons.js",
@@ -126,8 +141,8 @@
     },
     {
       "path": "lib/model.js",
-      "size": 17910,
-      "sha256": "6f492d2f5cd472dbae668e043a26ba0209c22f5b466e07840b84a6cb7277f7f6"
+      "size": 19774,
+      "sha256": "762548ab7e9305e72c68ab2bdfc4f003b8dd0afeb42f9f6dc9c217577ea7387e"
     },
     {
       "path": "lib/palette.js",
@@ -141,13 +156,23 @@
     },
     {
       "path": "lib/planner.js",
-      "size": 6896,
-      "sha256": "167f60b1aa694521a7414e32ab5c815e6c2be4d0af1d99020a74957095d3e8ad"
+      "size": 6987,
+      "sha256": "b0ce849729c2cb5f8ec1e3d9ed7c05836088250358d3416be2660e875ca23bab"
+    },
+    {
+      "path": "lib/profile-ui.js",
+      "size": 5993,
+      "sha256": "1f79fff841221d11032b86437292be711e255926d03129c027260467a5c68183"
+    },
+    {
+      "path": "lib/profiles.js",
+      "size": 2871,
+      "sha256": "be74270bcd670a2f99b5b8143487e48f0359d0537f18e9f3f4becdcab52942cb"
     },
     {
       "path": "lib/reminder-ui.js",
-      "size": 3315,
-      "sha256": "91443f6649f3d62a47f099474b9f86b9cfd9c14414fd0070ff1b037d8caedae5"
+      "size": 3402,
+      "sha256": "d494c3c376032063aa434691f673a2157e53a7f2f0e1697406429caabfd6d41a"
     },
     {
       "path": "lib/reminders.js",
@@ -161,13 +186,13 @@
     },
     {
       "path": "lib/store.js",
-      "size": 25323,
-      "sha256": "8cba2643c029b5ccf2d010a88deecc0a1127ef2a787798419b056934c8282be3"
+      "size": 27531,
+      "sha256": "4fb19d09ea06eb16d6ed618c44bc0b352910bfb61b193d1eaa3cf70f24e951e4"
     },
     {
       "path": "lib/task-sync-model.js",
-      "size": 5413,
-      "sha256": "d80375c667d6772cdeae60a9339ac0c3e5b8a5ed04dca756d72d9751684df818"
+      "size": 6225,
+      "sha256": "96b9b3c61127bf405d39e3fdda832a1c45f32973c6954a9daad08d7f91d0af5a"
     },
     {
       "path": "lib/task-tools-ui.js",
@@ -206,28 +231,28 @@
     },
     {
       "path": "manifest.json",
-      "size": 1678,
-      "sha256": "05f8b24635349a8c45dc938bded28548892605a88c518e8f2c123be3faa3a2da"
+      "size": 1677,
+      "sha256": "dd7799c9c5852d0ee5a439bea3803cd91372f78ed6d6af7e71b18e9cb7d8b658"
     },
     {
       "path": "newtab.html",
-      "size": 9136,
-      "sha256": "8c1e8126e0754438e35ef8805a9166cfe229e84baf196bd82ad7beb84f84fcd1"
+      "size": 9537,
+      "sha256": "7ce2ed810efcdaafb31fda3863b616d61dac68e5912df8b039d6d92406eb664a"
     },
     {
       "path": "PRIVACY.md",
-      "size": 7954,
-      "sha256": "e22f3e45f779e7aa231a00a77b2e42cc8df03539f10026348d9e5721352c2a4d"
+      "size": 9129,
+      "sha256": "03dec904778e66c30e07332ae9171406ac69bbe7a44bfcef020c609b48cc3dc4"
     },
     {
       "path": "README.md",
-      "size": 14761,
-      "sha256": "ce81e5170e0fba553aca2fab3ed34dd8187aa9d08fe77c86b057fa9a6d83295e"
+      "size": 15433,
+      "sha256": "ed96deb9f485c4c883b2e9c324dbfe29bd0db76a589fa6d02caaaaaec0606226"
     },
     {
       "path": "service-worker.js",
-      "size": 5347,
-      "sha256": "f56fbf94f64cb140882b1ed527be2b9da11e85c54a44561084dc7724c9c87f49"
+      "size": 5349,
+      "sha256": "b66dae1e79d448ae6d1b076a562ee682abdcb22b67a71b7fc0760c14dbd90769"
     },
     {
       "path": "styles.css",
@@ -236,8 +261,8 @@
     },
     {
       "path": "VERIFY.md",
-      "size": 25793,
-      "sha256": "cac1b04ccbfb40f4ba766c19e3df539775b0456ab8aa2d6b99e445cfb3f79b26"
+      "size": 27237,
+      "sha256": "d48181669362f0530a65b23744e293ee5b510780646e962ecdcc83b915518db7"
     }
   ]
 }

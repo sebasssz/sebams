@@ -5,7 +5,7 @@ import assert from 'node:assert/strict';
 import {createDefaultState,upgradeState,validateState,validateBackup,WIDGET_KEYS,APPEARANCE_DEFAULTS} from '../lib/model.js';
 import {matchesTaskDate,taskDateLabel} from '../lib/tasks.js';
 function legacyState() {
-  const state=createDefaultState();state.schemaVersion=1;state.prefs.name='Existing user';state.revision=9;
+  const state=createDefaultState();state.schemaVersion=1;delete state.profileTrash;for(const w of Object.values(state.workspaces)){delete w.name;delete w.color;}state.prefs.name='Existing user';state.revision=9;
   delete state.photos;for(const key of Object.keys(APPEARANCE_DEFAULTS))delete state.prefs[key];
   state.workspaces.personal.notes='Keep this note';state.workspaces.personal.notesRevision=3;
   state.workspaces.personal.widgets.links=false;
@@ -16,14 +16,14 @@ function legacyState() {
 }
 test('schema upgrade preserves existing data and workspace visibility without mutating the old snapshot',()=>{
   const old=legacyState(),upgraded=upgradeState(old);
-  assert.equal(upgraded.schemaVersion,6);assert.equal(old.schemaVersion,1);assert.equal(upgraded.revision,9);
+  assert.equal(upgraded.schemaVersion,7);assert.equal(old.schemaVersion,1);assert.equal(upgraded.revision,9);
   assert.equal(upgraded.workspaces.personal.notes,'Keep this note');assert.equal(upgraded.workspaces.personal.notesRevision,3);
   assert.equal(upgraded.workspaces.personal.tasks[0].text,'Keep this task');assert.equal(upgraded.workspaces.personal.tasks[0].dueDate,'');
   assert.equal(upgraded.workspaces.personal.widgets.links,false);assert.equal(upgraded.workspaces.personal.widgets.notes,true);
   assert.equal(upgraded.workspaces.personal.links[0].pinned,false);assert.equal(validateState(upgraded),upgraded);
 });
 test('old backups upgrade and retain content; unknown or unsafe old fields are rejected',()=>{
-  const backup={format:'sebams-backup',version:1,state:legacyState(),images:[]};validateBackup(backup);assert.equal(backup.state.schemaVersion,6);assert.equal(backup.state.prefs.name,'Existing user');
+  const backup={format:'sebams-backup',version:1,state:legacyState(),images:[]};validateBackup(backup);assert.equal(backup.state.schemaVersion,7);assert.equal(backup.state.prefs.name,'Existing user');
   const unknown=legacyState();unknown.prefs.unrecognized=true;assert.throws(()=>upgradeState(unknown));
   const unsafe=legacyState();unsafe.workspaces.personal.links[0].url='javascript:alert(1)';assert.throws(()=>upgradeState(unsafe));
 });

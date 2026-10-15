@@ -21,7 +21,7 @@ export function reminderFromDue(dueDate,lead=60) { return dueDate?new Date(dueDa
 // Applied in the same storage transaction as completion: one successor per occurrence.
 export function finalizeTasks(state,before,now=Date.now()) {
   for(const [wsid,w] of Object.entries(state.workspaces)){
-    const previous=new Map(before.workspaces[wsid].tasks.map(t=>[t.id,t]));
+    const previous=new Map((before.workspaces[wsid]?.tasks||before.profileTrash?.find(item=>item.id===wsid)?.workspace.tasks||[]).map(t=>[t.id,t]));
     for(const task of [...w.tasks]){
       const old=previous.get(task.id);
       if(!old)for(const [key,value] of Object.entries(TASK_EXTRA_DEFAULTS))if(!Object.hasOwn(task,key))task[key]=structuredClone(value);
@@ -64,8 +64,8 @@ export function captureTask(info,tab={}) {
 export function searchEntries(state,query) {
   const q=query.toLocaleLowerCase().trim(),out=[];
   for(const [workspace,w] of Object.entries(state.workspaces)){
-    for(const t of w.tasks)out.push({type:'task',workspace,id:t.id,label:t.text,meta:`${workspace} · ${t.list}${t.done?' · completed':''}`,search:t.text+' '+t.details+' '+t.list});
-    for(const list of w.lists)out.push({type:'list',workspace,id:list,label:list,meta:workspace+' · list',search:list});
+    for(const t of w.tasks)out.push({type:'task',workspace,id:t.id,label:t.text,meta:`${w.name||workspace} · ${t.list}${t.done?' · completed':''}`,search:t.text+' '+t.details+' '+t.list});
+    for(const list of w.lists)out.push({type:'list',workspace,id:list,label:list,meta:(w.name||workspace)+' · list',search:list});
     for(const link of w.links)out.push({type:'link',workspace,id:link.id,label:link.title,meta:new URL(link.url).hostname,url:link.url,search:link.title+' '+link.url});
   }
   return out.filter(e=>!q||e.search.toLocaleLowerCase().includes(q)).slice(0,40);
