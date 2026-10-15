@@ -23,6 +23,10 @@
     {
       "name": "The real direct sync transport uploads local tasks and receives a task created through MCP service logic",
       "status": "pass"
+    },
+    {
+      "name": "Updating files before Chrome reload offers a safe reload instead of sending schema 7 data to an old worker",
+      "status": "pass"
     }
   ],
   "errors": []

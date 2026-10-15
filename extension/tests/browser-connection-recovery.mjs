@@ -44,6 +44,14 @@ try{
   await setup('success');let result=await sync();assert.equal(result.result.connected,true);assert.equal(result.status,'Synced with ChatGPT.');assert.ok((await service.list()).tasks.some(t=>t.id==='local-fixture'));
   await service.create({requestId:'transport-fixture-create-01',workspace:'personal',list:'Inbox',text:'Cloud sync fixture',dueDate:'2026-10-16',priority:'high'});await sync();const task=await page.evaluate(async()=>(await import('./lib/store.js')).getState().workspaces.personal.tasks.find(t=>t.text==='Cloud sync fixture'));assert.equal(task.priority,'high');assert.equal(task.dueDate,'2026-10-16');
  });
+ await check('Updating files before Chrome reload offers a safe reload instead of sending schema 7 data to an old worker',async()=>{
+  await page.evaluate(()=>{const getManifest=chrome.runtime.getManifest.bind(chrome.runtime);window.manifestFixture=getManifest;chrome.runtime.getManifest=()=>({...getManifest(),version:'1.10.0'});window.reloadRequested=false;chrome.runtime.reload=()=>{window.reloadRequested=true;};});
+  const before=await page.evaluate(async()=>JSON.stringify((await import('./lib/store.js')).getState().workspaces));
+  await page.locator('#settings-open').click();await page.getByRole('button',{name:'ChatGPT',exact:true}).click();await page.getByText('Finish updating Sebams',{exact:true}).waitFor();
+  await page.getByRole('button',{name:'Sync now',exact:true}).click();await page.getByText('Reload Sebams to finish updating, then sync again.',{exact:true}).waitFor();
+  await page.screenshot({animations:'disabled',path:path.join(qa,'finish-update.png')});await page.getByRole('button',{name:'Finish update and reload',exact:true}).click();await page.waitForFunction(()=>window.reloadRequested);
+  const after=await page.evaluate(async()=>JSON.stringify((await import('./lib/store.js')).getState().workspaces));assert.equal(after,before);
+ });
  assert.deepEqual(errors,[]);
 }catch(error){console.error(error.stack);process.exitCode=1;await context?.pages()[0]?.screenshot({path:path.join(qa,'failure.png')}).catch(()=>{});}
 finally{await fs.writeFile(path.join(qa,'results.json'),JSON.stringify({results,errors},null,2));await context?.close();}

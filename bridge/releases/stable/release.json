@@ -1,13 +1,13 @@
 {
   "format": "sebams-local-release",
   "version": "2.0.1",
-  "notes": "Sebams 2.0.1 fixes the Links toolbar, restores Add and Options, and makes the row ellipsis open editing. ChatGPT sync recovers through the connection page after an expired session, blocked cross-site cookies, incomplete pairing or stale connection tab. Local tasks and references are preserved.",
-  "publishedAt": "2026-10-15T21:00:06.320Z",
+  "notes": "Sebams 2.0.1 fixes the Links toolbar, restores Add and Options, and makes the row ellipsis open editing. ChatGPT sync recovers through the connection page after an expired session, blocked cross-site cookies, incomplete pairing or stale connection tab. Detects an extension update that still needs Chrome Reload to avoid old background workers rejecting the new profile schema. Local tasks and references are preserved.",
+  "publishedAt": "2026-10-15T21:18:11.958Z",
   "files": [
     {
       "path": "app.js",
-      "size": 96933,
-      "sha256": "661c131004448f16a89a3bd8a8be94d4110c257547d918a67e71f8abaebe5a44"
+      "size": 97522,
+      "sha256": "0c29bf3ef80a61328e6974596367ee0de1e17cf04c94bfccb0f79a22248cbad9"
     },
     {
       "path": "ASSETS.md",
@@ -66,8 +66,8 @@
     },
     {
       "path": "design.css",
-      "size": 24425,
-      "sha256": "b23ee71e5679a0564dcff994dd027fdccff3901e31521e20af70cf43091af93b"
+      "size": 24655,
+      "sha256": "9dfcc18f4e892bc65c13370f9556fe818d9f337911d11a3ab13615eea5196ef5"
     },
     {
       "path": "GUIA-1.10.md",
@@ -220,6 +220,11 @@
       "sha256": "4677382c1b9c4d2e9316f33a65c9d1626606fc8d59f0d5f6a3af025be28c22ef"
     },
     {
+      "path": "lib/version.js",
+      "size": 215,
+      "sha256": "b097eb234e5a31da4cbda07d7bc95a69788e3f5492086b8b1fd9beefc599cfa7"
+    },
+    {
       "path": "lib/weather.js",
       "size": 3603,
       "sha256": "4d79234fed4139639aba48dac064b21854eb4c3bc80b250a28c30676c1d29783"
@@ -261,8 +266,8 @@
     },
     {
       "path": "VERIFY.md",
-      "size": 27816,
-      "sha256": "b63362842aaf323264c6b4e5f7e0dff4b8f5f3836f89e14228ba1dd61d9e34c5"
+      "size": 27879,
+      "sha256": "4888971873c2b414e7b42676bccd29406b141cde0c960e3c0dd934f267903a82"
     }
   ]
 }

@@ -38,3 +38,5 @@ dialog{border-radius:18px;border-color:#ffffff13;background:var(--surface);backd
 .quick-link-row:hover .shortcut-options,.quick-link-row:focus-within .shortcut-options{opacity:1}
 @media(max-width:700px){.quick-link-row .shortcut-options{opacity:1}}
 @media(max-width:520px){.bottom-bar{row-gap:5px}.bottom-left{grid-column:1/-1;grid-row:1;justify-content:flex-start;gap:7px}.bottom-bar>.tools{grid-column:1/-1;grid-row:2;justify-self:end}.bottom-bar>.quote{grid-column:1/-1;grid-row:3}.scene-info-group{min-width:34px}}
+
+.runtime-reload{padding:18px;border:1px solid #b69b6544;background:#b69b650c;border-radius:12px;margin-bottom:24px}.runtime-reload strong{font-size:14px}.runtime-reload .help{margin:0}.runtime-reload .primary{justify-self:start}
