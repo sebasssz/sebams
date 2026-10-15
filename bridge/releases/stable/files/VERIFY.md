@@ -184,3 +184,7 @@ The scripts create separate profiles and use `--enable-unsafe-extension-debuggin
 - Exhausted disk/quota behavior was reviewed in error handling, not induced on the user's device.
 
 The in-app browser initially displayed a local preview, but a later attempt to reopen that URL was blocked by its URL policy. No workaround was attempted. The included dashboard screenshot comes from the separate, successfully tested Chrome extension.
+
+## 2.0.1 Links and connection recovery
+
+The Links toolbar uses normal flow so Add, Options and Close have separate click targets, including at 320 px and after scrolling long folders. The row ellipsis opens editing; add/edit/pin/reorder/remove/Undo are exercised by browser-links-recovery.mjs (3 scenarios). browser-connection-recovery.mjs exercises the actual extension transport against isolated fixtures: JSON 401, HTML sign-in, network failures, incomplete pairing, reused/stale tabs, account mismatch and two-way task delivery (6 scenarios). No personal task data is used.

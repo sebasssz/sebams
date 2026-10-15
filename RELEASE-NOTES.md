@@ -1,7 +1,7 @@
-Sebams 2.0.0
+Sebams 2.0.1
 
-- Consistent neutral dark UI across the dashboard, Tasks, Links, Settings, notes, focus timer, backgrounds and reminders. Organized Settings navigation and a quick profile picker.
-- Up to 12 editable profiles with stable identities, names and colors. Confirmed deletion moves complete local content and photo references to Recently deleted; restore and explicit permanent deletion are available. Backups include deleted profiles.
-- Schema 7 migration preserves existing data and reminder preferences. Custom profile metadata/tasks synchronize with ChatGPT; grouped deletion/edit conflicts preserve the whole profile. Older clients must update before syncing a profile-enabled account.
+- Fix Links toolbar overlap: Add, Options and Close use separate targets in a stable header at desktop and mobile widths, including while scrolling. The row ellipsis opens link editing instead of being an inert reorder button.
+- Recover ChatGPT sync after a JSON 401 response, sign-in HTML, network failures or incomplete pairing. Verify tracked connection tabs before reuse so stale or recycled tabs cannot prevent synchronization. Account mismatch checks remain enforced and provider errors remain visible.
+- Existing local tasks, references, profiles and connection settings are preserved.
 
-Validation: 75 extension unit checks, 9 connector checks and 31 focused Chrome scenarios, TypeScript and production build. GitHub release integrity and update installation/backup are verified after publication.
+Validation: 75 unit checks, 3 Links recovery scenarios, 6 connection transport scenarios, 11 ChatGPT regressions and 6 Links/photo scenarios using isolated test data. Public release digests and updater install/backup are verified after publication.

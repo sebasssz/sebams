@@ -26,4 +26,15 @@ dialog{border-radius:18px;border-color:#ffffff13;background:var(--surface);backd
 .tasks-panel .task-view-heading{padding-right:78px}
 @media(max-width:700px){#panel.tasks-panel>.panel-heading{top:15px;right:15px}.task-smart-views{margin-right:43px}.tasks-panel .task-view-heading{padding-right:20px}#panel[open]>#toast{bottom:14px}}
 .scene-info-group{flex-shrink:0}
+/* Keep the Links toolbar in normal flow so Close never covers Add or Options. */
+#panel.links-panel>.panel-heading{position:static;display:flex;align-items:center;gap:6px;padding:12px 14px;margin:0;border-bottom:1px solid var(--line);background:#191a1d;flex-shrink:0}
+#panel.links-panel>.panel-heading>div:first-child{display:block;flex:1;min-width:0}
+#panel.links-panel>.panel-heading .eyebrow{display:none}
+#panel.links-panel>.panel-heading h2{font-size:16px;margin:0;letter-spacing:-.025em}
+#panel.links-panel>.panel-heading .links-controls{display:flex;align-items:center;gap:4px;flex-shrink:0}
+#panel.links-panel>.panel-heading .icon-button{width:30px;min-width:30px;height:30px;min-height:30px;padding:6px;margin:0}
+#panel.links-panel>#panel-body{padding:8px 14px 14px;max-height:none;flex:1}
+.quick-link-row .shortcut-options{min-width:24px;min-height:28px;padding:5px;opacity:0}
+.quick-link-row:hover .shortcut-options,.quick-link-row:focus-within .shortcut-options{opacity:1}
+@media(max-width:700px){.quick-link-row .shortcut-options{opacity:1}}
 @media(max-width:520px){.bottom-bar{row-gap:5px}.bottom-left{grid-column:1/-1;grid-row:1;justify-content:flex-start;gap:7px}.bottom-bar>.tools{grid-column:1/-1;grid-row:2;justify-self:end}.bottom-bar>.quote{grid-column:1/-1;grid-row:3}.scene-info-group{min-width:34px}}

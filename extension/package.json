@@ -1,6 +1,6 @@
 {
   "name": "sebams",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -15,7 +15,9 @@
     "test:reminders": "node tests/browser-reminders.mjs",
     "test:chatgpt": "node tests/browser-chatgpt.mjs",
     "test:feedback": "node tests/browser-feedback.mjs",
-    "test:revamp": "node tests/browser-revamp.mjs"
+    "test:revamp": "node tests/browser-revamp.mjs",
+    "test:links-recovery": "node tests/browser-links-recovery.mjs",
+    "test:connection-recovery": "node tests/browser-connection-recovery.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

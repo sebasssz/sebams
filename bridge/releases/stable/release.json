@@ -1,13 +1,13 @@
 {
   "format": "sebams-local-release",
-  "version": "2.0.0",
-  "notes": "Sebams 2.0: a complete neutral dark interface refresh, organized Settings navigation and a profile switcher. Create, rename, color, delete and restore profiles with local photos and backups preserved. ChatGPT supports custom profiles and protects deletion/edit conflicts. Update all connected devices to 2.0.",
-  "publishedAt": "2026-10-15T02:01:24.534Z",
+  "version": "2.0.1",
+  "notes": "Sebams 2.0.1 fixes the Links toolbar, restores Add and Options, and makes the row ellipsis open editing. ChatGPT sync recovers through the connection page after an expired session, blocked cross-site cookies, incomplete pairing or stale connection tab. Local tasks and references are preserved.",
+  "publishedAt": "2026-10-15T21:00:06.320Z",
   "files": [
     {
       "path": "app.js",
-      "size": 96800,
-      "sha256": "d08c729a92981a05ef781cbee3b28b54a96433190adf4d18c69317026ccab5b3"
+      "size": 96933,
+      "sha256": "661c131004448f16a89a3bd8a8be94d4110c257547d918a67e71f8abaebe5a44"
     },
     {
       "path": "ASSETS.md",
@@ -66,8 +66,8 @@
     },
     {
       "path": "design.css",
-      "size": 23369,
-      "sha256": "666216f446e75a51080a0ce647931e397cbda2bafd5b1a1f757f3874ab0dc5a8"
+      "size": 24425,
+      "sha256": "b23ee71e5679a0564dcff994dd027fdccff3901e31521e20af70cf43091af93b"
     },
     {
       "path": "GUIA-1.10.md",
@@ -116,8 +116,8 @@
     },
     {
       "path": "lib/chatgpt.js",
-      "size": 6471,
-      "sha256": "312d05453e7d3ab7fe9b02ebde403f6a8bd58c3d10b09076bec7d72cf55a95b8"
+      "size": 6708,
+      "sha256": "1f6c6a5c46a51c2e5cba8035a72e7b2cb436bde69e3ec3b5cf56ad1da3bdc629"
     },
     {
       "path": "lib/content.js",
@@ -232,7 +232,7 @@
     {
       "path": "manifest.json",
       "size": 1677,
-      "sha256": "dd7799c9c5852d0ee5a439bea3803cd91372f78ed6d6af7e71b18e9cb7d8b658"
+      "sha256": "1dcfba5f375aed650a59f058383402cbd7b9018671bf08510b5aac8038106d37"
     },
     {
       "path": "newtab.html",
@@ -261,8 +261,8 @@
     },
     {
       "path": "VERIFY.md",
-      "size": 27237,
-      "sha256": "d48181669362f0530a65b23744e293ee5b510780646e962ecdcc83b915518db7"
+      "size": 27816,
+      "sha256": "b63362842aaf323264c6b4e5f7e0dff4b8f5f3836f89e14228ba1dd61d9e34c5"
     }
   ]
 }

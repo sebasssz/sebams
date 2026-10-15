@@ -3,9 +3,11 @@ import {planChanges} from './task-sync-model.js';
 export const CHATGPT_ORIGIN='https://sebams-connect.poeticbadge1.chatgpt.site';
 export const CHATGPT_ALARM='sebams-chatgpt-sync';
 const permission={origins:[CHATGPT_ORIGIN+'/*']};let pending;
+const connectionRequired=()=>Object.assign(Error('Open the Sebams connection page and sign in with ChatGPT, then sync again.'),{needsConnection:true});
 async function api(route,body){
-  let response;try{response=await fetch(CHATGPT_ORIGIN+route,{method:body?'POST':'GET',credentials:'include',redirect:'error',cache:'no-store',headers:body?{'Content-Type':'application/json','X-Sebams-Client':'1'}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});}catch{throw Error('Open the Sebams connection page and sign in with ChatGPT, then sync again.');}
-  if(!response.ok){let data;try{data=await response.json();}catch{}throw Error(data?.error||'Sign in on the Sebams connection page, then try again.');}if(!response.headers.get('content-type')?.includes('application/json'))throw Error('Sign in on the Sebams connection page, then try again.');const text=await response.text();if(text.length>16000000)throw Error('The task collection is too large.');return JSON.parse(text);
+  let response;try{response=await fetch(CHATGPT_ORIGIN+route,{method:body?'POST':'GET',credentials:'include',redirect:'error',cache:'no-store',headers:body?{'Content-Type':'application/json','X-Sebams-Client':'1'}:{},...(body?{body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(20000)});}catch{throw connectionRequired();}
+  if(response.status===401)throw connectionRequired();
+  if(!response.ok){let data;try{data=await response.json();}catch{}throw Error(data?.error||'The sync could not finish. Try again.');}if(!response.headers.get('content-type')?.includes('application/json'))throw connectionRequired();const text=await response.text();if(text.length>16000000)throw Error('The task collection is too large.');return JSON.parse(text);
 }
 export async function connectChatGPT(){
   if(!await chrome.permissions.request(permission))throw Error('ChatGPT connection access was declined.');
@@ -13,15 +15,15 @@ export async function connectChatGPT(){
   await chrome.tabs.create({url:CHATGPT_ORIGIN+'/connect?extension='+chrome.runtime.id+'&nonce='+encodeURIComponent(nonce)});
 }
 export async function disconnectChatGPT(){const config=await getChatGPTConnection();if(config.connectionTabId!==null)await chrome.tabs.remove(config.connectionTabId).catch(()=>{});await configureChatGPTConnection({enabled:false,nonce:'',connectionTabId:null,status:'Disconnected. Tasks remain on this device.'});await chrome.alarms.clear(CHATGPT_ALARM);await chrome.permissions.remove(permission);}
-async function fallbackConnection(){const config=await getChatGPTConnection();if(!config.enabled||!config.userId)return;if(config.connectionTabId!==null){try{await chrome.tabs.get(config.connectionTabId);return;}catch{}}
+async function fallbackConnection(){const config=await getChatGPTConnection();if(!config.enabled||!config.nonce)return;if(config.connectionTabId!==null){try{const tab=await chrome.tabs.get(config.connectionTabId),url=new URL(tab.url);if(url.origin===CHATGPT_ORIGIN&&url.pathname==='/connect'&&url.searchParams.get('extension')===chrome.runtime.id&&url.searchParams.get('nonce')===config.nonce)return;}catch{}}
   const tab=await chrome.tabs.create({active:false,url:CHATGPT_ORIGIN+'/connect?extension='+chrome.runtime.id+'&nonce='+encodeURIComponent(config.nonce)+'&auto=1'});try{await configureChatGPTConnection({enabled:true,nonce:config.nonce,expectedNonce:config.nonce,connectionTabId:tab.id,status:'Synchronizing through the connection page. Sign in there if needed.'});}catch(error){await chrome.tabs.remove(tab.id).catch(()=>{});throw error;}}
 export async function syncChatGPT(){
   if(pending)return pending;pending=(async()=>{
-    await initStore();const {config,baseline,current}=await prepareChatGPTSync();if(!config.enabled||!config.userId){await chrome.alarms.clear(CHATGPT_ALARM);return {connected:false};}
+    await initStore();const {config,baseline,current}=await prepareChatGPTSync();if(!config.enabled){await chrome.alarms.clear(CHATGPT_ALARM);return {connected:false};}
     if(!await chrome.permissions.contains(permission))throw Error('Enable access to the Sebams connection page again.');
-    await chrome.alarms.create(CHATGPT_ALARM,{periodInMinutes:1});const profile=await api('/api/profile');if(profile.userId!==config.userId)throw Error('A different ChatGPT account is signed in. Disconnect before linking another account.');
+    await chrome.alarms.create(CHATGPT_ALARM,{periodInMinutes:1});if(!config.userId){await fallbackConnection();return {connected:false,pending:true};}const profile=await api('/api/profile');if(profile.userId!==config.userId)throw Error('A different ChatGPT account is signed in. Disconnect before linking another account.');
     const latest=await getChatGPTConnection();if(!latest.enabled||latest.nonce!==config.nonce)throw Error('The ChatGPT connection changed.');const changes=planChanges(current,baseline,config.conflicts.map(c=>c.key));const result=await api('/api/sync',{profileSupport:1,expectedUserId:config.userId,timezone:Intl.DateTimeFormat().resolvedOptions().timeZone||'America/La_Paz',changes});const accepted=await acceptChatGPTSync(config.nonce,current,result);return {connected:true,...accepted};
-  })().catch(async error=>{await setChatGPTStatus(error.message).catch(()=>{});if(error.message.startsWith('Open the Sebams connection page')||error.message.startsWith('Sign in on the Sebams connection page')){await fallbackConnection();return {connected:false,pending:true};}throw error;}).finally(()=>{pending=null;});return pending;
+  })().catch(async error=>{await setChatGPTStatus(error.message).catch(()=>{});if(error.needsConnection){await fallbackConnection();return {connected:false,pending:true};}throw error;}).finally(()=>{pending=null;});return pending;
 }
 export async function handleChatGPTMessage(message,sender){
   if(!sender?.url||sender.frameId!==0||new URL(sender.url).origin!==CHATGPT_ORIGIN||new URL(sender.url).pathname!=='/connect')throw Error('This page cannot connect to Sebams.');

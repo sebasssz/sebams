@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "name": "An actual JSON 401 response opens the first-party connection page instead of stopping sync",
+      "status": "pass"
+    },
+    {
+      "name": "A valid pending connection is reused, while a recycled unrelated tab cannot block recovery",
+      "status": "pass"
+    },
+    {
+      "name": "Sync now can finish a pairing that has not received an account identity yet",
+      "status": "pass"
+    },
+    {
+      "name": "Blocked cross-site cookies, HTML login pages and network errors all use the connection-page fallback",
+      "status": "pass"
+    },
+    {
+      "name": "Account mismatch errors remain visible and do not start a new fallback connection",
+      "status": "pass"
+    },
+    {
+      "name": "The real direct sync transport uploads local tasks and receives a task created through MCP service logic",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

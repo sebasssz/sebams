@@ -1,0 +1,17 @@
+{
+  "results": [
+    {
+      "name": "Links header buttons stay visible and clickable on desktop and narrow screens",
+      "status": "pass"
+    },
+    {
+      "name": "Add, edit, pin, reorder and remove links work through their visible controls",
+      "status": "pass"
+    },
+    {
+      "name": "Long folders keep the toolbar visible while scrolling and return cleanly to other panels",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}
