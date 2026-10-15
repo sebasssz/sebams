@@ -1,5 +1,7 @@
 # Sebams
 
+Version **1.10.0** adds **Settings → Suggestions**: write an idea or problem and review/send it as a GitHub issue. The connector supports access for other ChatGPT accounts without the extension owner approving each person, while task records remain isolated by account. See the Spanish [1.10 guide](GUIA-1.10.md).
+
 Version **1.9.0** replaces the integrated Gemini assistant with a private Sebams plugin for ChatGPT. Read or create tasks from a conversation and synchronize their text, details, dates, priorities and completion. This optional connection needs no model API key or Sebams Bridge. Photos remain local reference material. See the Spanish [1.9 guide](GUIA-1.9.md).
 
 Version **1.8.0** adds opening task reminders with configurable anticipation and time, preview, snooze and task actions, plus a shared GitHub Releases update source for other PCs. See the Spanish [1.8 guide](GUIA-1.8.md). Existing schema 5 data migrates to schema 6 while retaining all task tools, photos and settings.
@@ -12,7 +14,7 @@ Pinned shortcuts support logo-only, name-only or both, an optional dark surface,
 
 A calm, local-first new tab for Chrome. Original code, an original Sebams mark, three generated scenic backgrounds, and an optional online landscape collection. The composition follows the familiar clock, greeting, focus, weather, and corner tools in the [official Momentum reference](https://chromewebstore.google.com/detail/momentum/laookkfknpbbblfpciffpaejjkokdgca).
 
-## Update to 1.9.0
+## Update to 1.10.0
 
 Replace the files in your existing Sebams folder with this release, then click **Reload** on its card in `chrome://extensions` and open a new tab. Keep the same folder location and installed extension to retain its local data. Existing tasks, dates, notes, pinned links, settings, images, and backups upgrade automatically. Version 1.0 tasks start without a date and its links start unpinned. Chrome may ask you to accept the added context-menu capability. Notification permission is requested separately for optional desktop notifications. Opening reminders need no notification permission. Export a backup before moving the extension to a different folder or computer.
 

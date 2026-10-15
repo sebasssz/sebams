@@ -1,1 +1,7 @@
-Sebams 1.9.0 replaces the integrated Gemini assistant with a private task plugin for ChatGPT. Read tomorrow’s tasks, create tasks with date/priority and edit completion through MCP. Synchronization is optional, excludes photos and general notes, preserves local extras and asks the user to resolve same-field conflicts. The model API key and local AI Bridge are no longer part of Tasks. The unpacked update installer remains under Updates. Verified: 70 extension unit checks, 7 connector checks, 11 real Chrome scenarios, TypeScript and production build. The private plugin is deployed; account installation/linking remains a user action.
+Sebams 1.10.0
+
+- Settings → Suggestions: idea/problem form, retained in-tab draft, public GitHub review/submit flow, and a link to suggestions/replies.
+- Public connector access without an owner allowlist for each visitor; authenticated task records remain isolated by account.
+- Setup instructions and a copyable MCP URL for other ChatGPT accounts. Anonymous MCP task calls return HTTP 401.
+
+Validation: 70 extension unit checks, 7 connector checks, 6 Chrome scenarios, TypeScript and production build. Directory listing and ChatGPT consent remain controlled by OpenAI.

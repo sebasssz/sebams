@@ -1,0 +1,29 @@
+{
+  "results": [
+    {
+      "name": "Suggestions have accessible fields and explain the public GitHub review step",
+      "status": "pass"
+    },
+    {
+      "name": "Draft survives category changes and opens an encoded GitHub draft without publishing",
+      "status": "pass"
+    },
+    {
+      "name": "Problem reports use their own prefix, and malformed or oversized messages are rejected",
+      "status": "pass"
+    },
+    {
+      "name": "Clear draft resets only feedback and the settings fit a narrow viewport",
+      "status": "pass"
+    },
+    {
+      "name": "Every account has visible setup instructions and a copyable MCP URL",
+      "status": "pass"
+    },
+    {
+      "name": "No browser errors",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

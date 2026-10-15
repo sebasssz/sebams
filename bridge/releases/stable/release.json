@@ -1,13 +1,13 @@
 {
   "format": "sebams-local-release",
-  "version": "1.9.0",
-  "notes": "Private Sebams plugin for ChatGPT: read tasks, create dated priorities, and synchronize edits without a local AI Bridge. Integrated Gemini assistant removed; reference photos remain local. Updates installer connection moved into Updates settings.",
-  "publishedAt": "2026-10-13T01:45:08.149Z",
+  "version": "1.10.0",
+  "notes": "Suggestions in Settings open a GitHub draft for the Sebams team. Public ChatGPT connector access lets each person connect their own account without owner approval; tasks remain separate. Includes clearer setup instructions and authenticated MCP task calls.",
+  "publishedAt": "2026-10-15T00:37:49.319Z",
   "files": [
     {
       "path": "app.js",
-      "size": 94920,
-      "sha256": "a65a8f9ac8809179441578dca43b713094dafac38029c8142da5d83fbc722eba"
+      "size": 95604,
+      "sha256": "e18751830948005bcec4ff5bee787ff72e52604e19a2f8e08eec297aeefeec1a"
     },
     {
       "path": "ASSETS.md",
@@ -65,6 +65,11 @@
       "sha256": "239d6f7590ff9962339efbb54e1d2dbdc84963e0eb1138bbce0604ce29190113"
     },
     {
+      "path": "GUIA-1.10.md",
+      "size": 1396,
+      "sha256": "07201cdea4a50008b0ee370e3bab14545ccfca50eb3d3fe67102e06d72487983"
+    },
+    {
       "path": "GUIA-1.6.md",
       "size": 4287,
       "sha256": "646bbe57a7830a568580020e3ed04b8730d7c454ce25ceadcb2fab7a3bcad734"
@@ -81,8 +86,8 @@
     },
     {
       "path": "GUIA-1.9.md",
-      "size": 3471,
-      "sha256": "5ee3261d95e73d5ab5e1ec93e35c9d79e5c7b5066694dbc94aa216ee31bee4c7"
+      "size": 3598,
+      "sha256": "20aec0b852cf3a8fcf5fcb1c620cf426cf8ef5c9511393b281d4ad971573f45e"
     },
     {
       "path": "lib/ai.js",
@@ -113,6 +118,11 @@
       "path": "lib/favicons.js",
       "size": 595,
       "sha256": "2f720ce6e5d18855a874b44bb522c6bca67ee7f202cd00020b4a4ee088e9ce5a"
+    },
+    {
+      "path": "lib/feedback.js",
+      "size": 3468,
+      "sha256": "e9316e081dbb54bc12feafc12deb655ea09058be5bf08c38f2fa500900ef938d"
     },
     {
       "path": "lib/model.js",
@@ -196,8 +206,8 @@
     },
     {
       "path": "manifest.json",
-      "size": 1665,
-      "sha256": "ed18783fb51284bbd68a6565ad43333db518ec02b8ba3129ba17e543dbc8ee36"
+      "size": 1678,
+      "sha256": "05f8b24635349a8c45dc938bded28548892605a88c518e8f2c123be3faa3a2da"
     },
     {
       "path": "newtab.html",
@@ -206,13 +216,13 @@
     },
     {
       "path": "PRIVACY.md",
-      "size": 6869,
-      "sha256": "00facbed042ddc6a2370250e0a9d6421f50fed39e10ee845d307f7a5aeece313"
+      "size": 7954,
+      "sha256": "e22f3e45f779e7aa231a00a77b2e42cc8df03539f10026348d9e5721352c2a4d"
     },
     {
       "path": "README.md",
-      "size": 14443,
-      "sha256": "22c3c041291341ec7bd113d8ebb021c9b7232c23150afab8147a954a5a1fcfab"
+      "size": 14761,
+      "sha256": "ce81e5170e0fba553aca2fab3ed34dd8187aa9d08fe77c86b057fa9a6d83295e"
     },
     {
       "path": "service-worker.js",
@@ -221,13 +231,13 @@
     },
     {
       "path": "styles.css",
-      "size": 39810,
-      "sha256": "7ae6acf763a68da0a8e54498bf7b26cdac8ea0f667b343f3b3acddb9ea48ec03"
+      "size": 40179,
+      "sha256": "e44b559bf58fc134741cdc6636f42f95a7a1b44f55258360c790aa1f329ac128"
     },
     {
       "path": "VERIFY.md",
-      "size": 24841,
-      "sha256": "2b501dd4fa270ab8d2b16db2a1f84377402cde8ebeda684d63ceb36443396572"
+      "size": 25793,
+      "sha256": "cac1b04ccbfb40f4ba766c19e3df539775b0456ab8aa2d6b99e445cfb3f79b26"
     }
   ]
 }

@@ -4,27 +4,32 @@ Sebams works locally by default. Dashboard state, task details, photos, backgrou
 
 ## Optional ChatGPT plugin
 
-Version 1.9 removes the integrated Gemini assistant and the local Bridge task polling. The optional Sebams plugin uses a private Site at https://sebams-connect.poeticbadge1.chatgpt.site, authenticated with the user's ChatGPT account. Its MCP tools read and create tasks and edit their text, details, list, due date, priority or completion state. No model API or model API key is used by Sebams: the conversation happens in ChatGPT.
+Version 1.9 removes the integrated Gemini assistant and the local Bridge task polling. The optional Sebams plugin uses an authenticated Site at https://sebams-connect.poeticbadge1.chatgpt.site, authenticated with the user's ChatGPT account. Its MCP tools read and create tasks and edit their text, details, list, due date, priority or completion state. No model API or model API key is used by Sebams: the conversation happens in ChatGPT.
 
 Only after **Settings → ChatGPT → Connect ChatGPT** and the connection-page sign-in, Sebams synchronizes task titles, details, workspace/list names, dates, priorities and completion. This includes completed tasks. Reference photos, existing saved study answers, subtasks, exam plans, time tracking, dashboard notes, backgrounds and preferences are not sent through this connection. Reference photos may instead be downloaded and explicitly attached by the user in ChatGPT.
 
-The private Site stores task records separately by its authenticated, Site-scoped user identity. Sites handles authentication and access control. API and MCP task operations require identity; an extension checks that its paired identity matches before sending changes. Synchronization uses first-party sign-in cookies and optional host access, with no copied account cookies, stored passwords or API credentials. The exact Site origin and a private pairing nonce restrict web-to-extension messages. The nonce, synchronization baseline, account binding and conflict receipts are excluded from backups and delivered source/ZIPs.
+The Site stores task records separately by its authenticated, Site-scoped user identity. Sites handles authentication and access control. API and MCP task operations require identity; an extension checks that its paired identity matches before sending changes. Synchronization uses first-party sign-in cookies and optional host access, with no copied account cookies, stored passwords or API credentials. The exact Site origin and a private pairing nonce restrict web-to-extension messages. The nonce, synchronization baseline, account binding and conflict receipts are excluded from backups and delivered source/ZIPs.
 
 Synchronization runs while the browser is open, approximately every minute and when entering or changing Sebams. ChatGPT sees the last synchronized copy; queries include its timestamp. Offline changes stay local until the connection is available. When direct authenticated requests are unavailable, a temporary connection page performs the first-party request and closes after completion. An expired session needs a user sign-in. Disconnecting stops synchronization and retains local tasks; it does not delete the previously synchronized private cloud copy. Conflicting edits are retained for the user to resolve rather than silently replacing one another.
 
-The plugin requires installation and account connection in ChatGPT. Availability and platform action confirmations are controlled by ChatGPT. The private Site is owner-only; publishing its source code on GitHub does not make task records public.
+The plugin requires installation and account connection in ChatGPT. Availability and platform action confirmations are controlled by ChatGPT. From version 1.10 the Site is available to other visitors without owner approval. Public access to the Site does not grant anonymous access to tasks: task pages require sign-in, and API/MCP operations use the authenticated Site-scoped identity. Other accounts cannot read or edit your task records. Publication in the public ChatGPT plugin directory is a separate OpenAI review process.
+
+## Suggestions
+
+Settings → Suggestions keeps a draft in memory for the current Sebams tab. Continue in GitHub opens a prefilled GitHub issue containing only the title, description, chosen type and Sebams version. A GitHub account is required, and the user must review and submit the issue there. Submitted suggestions are public at https://github.com/sebasssz/sebams/issues, where the project team can read and reply. Opening a draft alone does not send a completed issue; the draft text is transmitted to GitHub in the navigation URL and may appear in browser history. Tasks, images and private connection details are never included automatically.
 
 ## Permissions and other destinations
 
 | Feature | Permission / destination | Information shared |
 |---|---|---|
-| ChatGPT tasks, when connected | Optional host access to the exact Sebams Site; authenticated private Site and MCP | Task metadata described above; sign-in session managed by Sites |
+| ChatGPT tasks, when connected | Optional host access to the exact Sebams Site; authenticated Site and MCP | Task metadata described above; sign-in session managed by Sites |
 | Connect the extension | `externally_connectable` restricted to the exact Sebams Site | Task exchange only for the paired nonce and account |
 | Install extension updates | Optional loopback host access; paired Bridge at 127.0.0.1:8787 | Local connection code and extension version |
 | GitHub update source | Bridge requests api.github.com and approved GitHub asset servers | Release/download requests; no tasks, photos, API keys or pairing code |
 | City lookup and weather, when enabled | Optional Open-Meteo geocoding / forecast host access | City name or saved coordinates; device coordinates only after Use my location |
 | Online backgrounds, when enabled | Optional Lorem Picsum / Fastly host access | Photo IDs and image dimensions; no personal task data |
 | Website icons, when enabled | Google favicon service / gstatic; Chrome's `favicon` permission | Website hostname and icon size, without path/query/fragment |
+| Suggestions, after Continue in GitHub | GitHub issue draft/navigation | Only the typed suggestion, type and extension version; submitted issues are public |
 | Web search / opening a link | User-selected provider or website | Search text or normal navigation |
 | Copy for ChatGPT | System clipboard | Task prompt and photo filenames; no photo bytes |
 | Add to Sebams Tasks | `contextMenus` | Only the selected text, selected link or current page URL/title when explicitly selected; stored locally and synchronized if ChatGPT is connected |

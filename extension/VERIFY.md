@@ -1,3 +1,11 @@
+# Sebams 1.10.0: verification
+
+On October 14, 2026, the 70 extension unit checks and 7 connector checks passed. The focused Chrome feedback suite covers six scenarios: accessible fields and empty-form prevention, preserved drafts and correctly encoded GitHub handoff, bug prefixes and invalid/oversized messages, clearing feedback and mobile layout, setup instructions for each account, and no browser errors. It uses an isolated Chrome profile and never submits a real GitHub issue. GitHub may show sign-in before returning to the prepared issue.
+
+The connector TypeScript check and production build passed. Existing connector tests verify separation of account data and rejection of missing identity. Public hosting and authenticated MCP responses are checked after deployment. Installation and OAuth consent remain actions controlled by the account and ChatGPT. Public directory listing requires separate OpenAI review.
+
+## Historical verification
+
 # Sebams 1.9.0: verification
 
 On October 12, 2026, 70 existing extension unit checks, 7 new connector checks and 11 focused real Chrome checks passed. The hosted connector also passed the TypeScript check and production build. Chrome checks use an isolated profile and an SQLite adapter implementing D1 transaction behavior, with actual IndexedDB/photos and extension messaging. They cover the removed assistant, bidirectional task changes, idempotent creation, local attachments/extras, edits made during a sync, explicit conflict resolution, completion/deletion, Site-origin/nonce restrictions, private backup exclusions, disconnect races, responsive layout and no page errors.

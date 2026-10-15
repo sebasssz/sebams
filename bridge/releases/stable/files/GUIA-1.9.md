@@ -1,5 +1,7 @@
 # Sebams 1.9 — Plugin de ChatGPT
 
+> Guía histórica de 1.9. Para conectar otras cuentas con el conector público desde 1.10, usa [GUIA-1.10.md](GUIA-1.10.md).
+
 Esta versión retira el asistente Gemini de Tasks y lo sustituye por un plugin privado de Sebams para ChatGPT. No necesitas una clave de API de IA ni ejecutar Sebams Bridge para esta conexión.
 
 ## Conectar
