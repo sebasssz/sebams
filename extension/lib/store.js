@@ -99,7 +99,7 @@ export async function reconcileBridgeTasks(tasks){
 }
 // Mark orphans first, then remove them on a later sweep after every Undo window expires.
 export async function pruneTaskAttachments(now=Date.now()){
-  const db=await database(),tx=db.transaction(['data','task-attachments'],'readwrite'),done=complete(tx);
-  try{const state=upgradeState(await request(tx.objectStore('data').get('state'))),refs=new Set(taskAttachmentMetadata(state).map(i=>i.id)),previous=new Map((await request(tx.objectStore('data').get('attachment-orphans')))||[]),keys=await request(tx.objectStore('task-attachments').getAllKeys()),orphans=[];for(const id of keys){if(refs.has(id))continue;const first=previous.get(id)??now;if(now-first>=60000)tx.objectStore('task-attachments').delete(id);else orphans.push([id,first]);}tx.objectStore('data').put(orphans,'attachment-orphans');}catch(error){tx.abort();await done.catch(()=>{});throw error;}await done;
+  const db=await database(),tx=db.transaction(['data','private','task-attachments'],'readwrite'),done=complete(tx);
+  try{const state=upgradeState(await request(tx.objectStore('data').get('state'))),refs=new Set(taskAttachmentMetadata(state).map(i=>i.id)),recovery=await request(tx.objectStore('private').get('account-recovery')),conflict=await request(tx.objectStore('private').get('account-conflict')),previous=new Map((await request(tx.objectStore('data').get('attachment-orphans')))||[]),keys=await request(tx.objectStore('task-attachments').getAllKeys()),orphans=[];for(const saved of [recovery?.state,conflict?.local,conflict?.remote].filter(Boolean))for(const meta of taskAttachmentMetadata(saved))refs.add(meta.id);for(const id of keys){if(refs.has(id))continue;const first=previous.get(id)??now;if(now-first>=60000)tx.objectStore('task-attachments').delete(id);else orphans.push([id,first]);}tx.objectStore('data').put(orphans,'attachment-orphans');}catch(error){tx.abort();await done.catch(()=>{});throw error;}await done;
 }
 

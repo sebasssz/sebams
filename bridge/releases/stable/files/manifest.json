@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
   "name": "Sebams — A little space to focus",
-  "version": "2.0.1",
-  "description": "A calm new tab with scenic backgrounds, a daily focus, tasks, weather, notes, habits, and a reliable focus timer. Local by default.",
+  "version": "2.1.0",
+  "description": "A calm new tab with tasks, profiles, private account sync, shared groups, scenic backgrounds, notes and focus tools. Local by default.",
   "minimum_chrome_version": "120",
   "chrome_url_overrides": {
     "newtab": "newtab.html"

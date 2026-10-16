@@ -2,6 +2,16 @@
 
 Sebams works locally by default. Dashboard state, task details, photos, backgrounds, notes and preferences are stored in the browser's IndexedDB database `sebams-v1`. Sebams adds no advertising, telemetry or analytics. Local storage is not encrypted by Sebams; anyone with access to the browser profile or a backup may be able to read it. Keep the installed extension folder and identity when updating to retain data.
 
+## Optional Sebams account and Groups
+
+Starting in 2.1, email-code sign-in is a separate opt-in connection. It sends the entered email to the Sebams server and Brevo to deliver a one-time six-digit code. The server stores the verified email, display name, protected code digests, rate-limit keys, and hashed random session tokens. Codes expire in 10 minutes, are consumed once and allow five attempts; requests are throttled. Sessions last up to 30 days per device. Expired challenges, sessions and rate buckets are cleaned in bounded batches. Provider and verification secrets are configured only on the server.
+
+Signing in synchronizes the full personal state, including profiles and Recently deleted, tasks/extras, notes, links, habits, preferences, uploaded backgrounds and task photos. Account records are scoped to the verified account. Uploaded photo bytes are stored in private R2 objects behind session authorization; the combined account quota is 64 MB, including older uploaded files no longer referenced by current state. There is no account/server-file purge UI in this version. Device timer execution, private connection codes, login tokens and online-photo cache bytes are not synchronized. The service is not end-to-end encrypted by Sebams.
+
+Concurrent independent edits combine; conflicting edits require choosing which full copy to keep. One previous local state and its referenced photos are retained for recovery on the receiving device. Offline edits remain local until the browser is open and online. Switching to another Sebams account requires explicit confirmation before combining local data and pauses the previous ChatGPT connection. Signing out revokes the current server session when reachable and removes it locally; offline sign-out cannot revoke a server session immediately.
+
+Groups are separate shared server records. Members see each other’s display names and all group tasks, details, assignees, dates, priorities and completion. They do not see member email addresses or personal profiles/notes/photos. A six-letter invitation code grants membership to signed-in users who know it, with join rate limits. Membership persists across devices. All members create/assign; only the current assignee completes/reopens. Only the leader renames, removes members, deletes or restores a group. Deleted groups are retained for leader restoration. Personal backups exclude group records and private session/cache data.
+
 ## Optional ChatGPT plugin
 
 Version 1.9 removes the integrated Gemini assistant and the local Bridge task polling. The optional Sebams plugin uses an authenticated Site at https://sebams-connect.poeticbadge1.chatgpt.site, authenticated with the user's ChatGPT account. Its MCP tools read and create tasks and edit their text, details, list, due date, priority or completion state. No model API or model API key is used by Sebams: the conversation happens in ChatGPT.
@@ -28,6 +38,7 @@ Settings → Suggestions keeps a draft in memory for the current Sebams tab. Con
 
 | Feature | Permission / destination | Information shared |
 |---|---|---|
+| Sebams account and Groups, when enabled | Optional host access to the same Sebams Site; private D1/R2 account storage | Personal state/photos and shared group data described above; email goes to Brevo for verification |
 | ChatGPT tasks, when connected | Optional host access to the exact Sebams Site; authenticated Site and MCP | Task metadata described above; sign-in session managed by Sites |
 | Connect the extension | `externally_connectable` restricted to the exact Sebams Site | Task exchange only for the paired nonce and account |
 | Install extension updates | Optional loopback host access; paired Bridge at 127.0.0.1:8787 | Local connection code and extension version |

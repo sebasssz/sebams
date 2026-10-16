@@ -1,6 +1,6 @@
 import {el,icon} from './ui.js';
 import {profileName} from './profiles.js';
-const pages={general:['General','The little things that make it yours.','settings'],appearance:['Appearance','Find your balance of scenery and simplicity.','image'],workspace:['Profiles','Keep each part of your day in its own space.','list'],chatgpt:['ChatGPT','Your tasks, connected to your conversation.','external'],updates:['Updates','Keep Sebams current across your computers.','arrow'],suggestions:['Suggestions','Build a better Sebams with us.','note'],data:['Data & backups','Your information, with you in control.','note']};
+const pages={account:['Account','Your space, wherever you are.','cloud'],general:['General','The little things that make it yours.','settings'],appearance:['Appearance','Find your balance of scenery and simplicity.','image'],workspace:['Profiles','Keep each part of your day in its own space.','list'],chatgpt:['ChatGPT','Your tasks, connected to your conversation.','external'],updates:['Updates','Keep Sebams current across your computers.','arrow'],suggestions:['Suggestions','Build a better Sebams with us.','note'],data:['Data & backups','Your information, with you in control.','note']};
 export function settingsLabel(id){return pages[id]?.[0]||id;}
 export function decorateSettings(body,tab){
   const nav=body.querySelector('nav.tabs');if(!nav)return;nav.classList.add('settings-navigation');

@@ -1,5 +1,7 @@
 # Sebams
 
+Version **2.1.0** adds an email-code Sebams account, private sync across devices (including uploaded photos), and shared Groups inside Tasks. Members join with a six-letter code, assign work, and complete their own tasks; only the leader manages or deletes the group. Email delivery requires the owner to configure the project sender once. See the [2.1 guide](GUIA-2.1.md).
+
 Version **2.0.0** reorganizes the dashboard and every panel around a consistent, neutral dark design. Settings has sidebar navigation; the new profile picker and **Settings → Profiles** create, rename, color, delete and restore up to 12 active profiles. Existing data migrates to schema 7. Deleted profiles and their reference photos remain recoverable on this device until explicitly erased, and are included in backups. ChatGPT supports custom profile names and task lists. See the Spanish [2.0 guide](GUIA-2.0.md).
 
 Version **1.10.0** adds **Settings → Suggestions**: write an idea or problem and review/send it as a GitHub issue. The connector supports access for other ChatGPT accounts without the extension owner approving each person, while task records remain isolated by account. See the Spanish [1.10 guide](GUIA-1.10.md).
@@ -96,4 +98,4 @@ npm test
 
 In a restricted test environment that prevents child processes, use `node --test --test-isolation=none tests/*.test.mjs`.
 
-The browser QA scripts use Playwright as a development-only dependency and a separate profile. See [VERIFY.md](VERIFY.md) for actual tested scenarios and the remaining manual checks. This is an unpacked extension, not a Chrome Web Store publication. Calendar services and cloud synchronization remain future enhancements. The optional AI and MCP service is delivered separately.
+The browser QA scripts use Playwright as a development-only dependency and a separate profile. See [VERIFY.md](VERIFY.md) for actual tested scenarios and the remaining manual checks. This is an unpacked extension, not a Chrome Web Store publication. Calendar service integrations remain a future enhancement. Private account synchronization and Groups are available in 2.1 once the email sender is activated; the existing ChatGPT MCP connector remains a separate optional connection.

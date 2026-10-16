@@ -1,13 +1,13 @@
 {
   "format": "sebams-local-release",
-  "version": "2.0.1",
-  "notes": "Sebams 2.0.1 fixes the Links toolbar, restores Add and Options, and makes the row ellipsis open editing. ChatGPT sync recovers through the connection page after an expired session, blocked cross-site cookies, incomplete pairing or stale connection tab. Detects an extension update that still needs Chrome Reload to avoid old background workers rejecting the new profile schema. Local tasks and references are preserved.",
-  "publishedAt": "2026-10-15T21:18:11.958Z",
+  "version": "2.1.0",
+  "notes": "Sebams 2.1 adds a private email-code account with cross-device sync for profiles, tasks, notes, links, preferences and uploaded photos. Shared Groups use six-letter invitations, member assignments and leader controls with recoverable deletion. Email delivery requires the owner to activate the private sender configuration.",
+  "publishedAt": "2026-10-15T23:45:52.976Z",
   "files": [
     {
       "path": "app.js",
-      "size": 97522,
-      "sha256": "0c29bf3ef80a61328e6974596367ee0de1e17cf04c94bfccb0f79a22248cbad9"
+      "size": 100366,
+      "sha256": "881920d0e5754740548c35928bc8ee1b1f81520bcb2f464b9cfab5218694083a"
     },
     {
       "path": "ASSETS.md",
@@ -66,8 +66,8 @@
     },
     {
       "path": "design.css",
-      "size": 24655,
-      "sha256": "9dfcc18f4e892bc65c13370f9556fe818d9f337911d11a3ab13615eea5196ef5"
+      "size": 31184,
+      "sha256": "c25b3067e4bed73135977d2a829e8897613b20e3279302df2ba9a01860c30956"
     },
     {
       "path": "GUIA-1.10.md",
@@ -100,6 +100,26 @@
       "sha256": "c7f55f2579e1e9c58100feb4ab79832bf779d47d95dac7b0bb872e67c644c2f8"
     },
     {
+      "path": "GUIA-2.1.md",
+      "size": 4436,
+      "sha256": "4c2f5d1ce1865aa8b703875382c187cb5952beb63ec0d874fd26ea5bccca0ff6"
+    },
+    {
+      "path": "lib/account-store.js",
+      "size": 5688,
+      "sha256": "be702976242e26c13f820240635e375b49ec3432ce9f58a193ce430c0770b601"
+    },
+    {
+      "path": "lib/account-ui.js",
+      "size": 6025,
+      "sha256": "b0ff2389c38e491722572b543b016e335feb56f06bb41352c1b5ca3dd3d3bcc1"
+    },
+    {
+      "path": "lib/account.js",
+      "size": 8968,
+      "sha256": "c2da8a690e142442efbedf2af9dba8f1caaf4e2b92ab35b5c270fcde5f9e80fe"
+    },
+    {
       "path": "lib/ai.js",
       "size": 3003,
       "sha256": "1f94fa41144560db36a97a8720750998540dbef9f76f6e8d24d012e1804ed097"
@@ -116,8 +136,13 @@
     },
     {
       "path": "lib/chatgpt.js",
-      "size": 6708,
-      "sha256": "1f6c6a5c46a51c2e5cba8035a72e7b2cb436bde69e3ec3b5cf56ad1da3bdc629"
+      "size": 6788,
+      "sha256": "838b05cc79cd8654bf81f4e3a03b17b1150d1d613c644ce3e1673aa2329c8985"
+    },
+    {
+      "path": "lib/cloud-model.js",
+      "size": 2431,
+      "sha256": "5a77564ebb40f4a31c642e50b70c9602a9f02d1093faba4159d3abaa5714f36f"
     },
     {
       "path": "lib/content.js",
@@ -126,8 +151,8 @@
     },
     {
       "path": "lib/design.js",
-      "size": 3070,
-      "sha256": "275516bfd875eb1f6cf06c9f274d9ba766b747c28f0c64f1a43824245aec8243"
+      "size": 3130,
+      "sha256": "11d2c2eb2c5c0daf13d872b0c3257690390ca8a04b87c52a6b025566bb9df5ca"
     },
     {
       "path": "lib/favicons.js",
@@ -138,6 +163,11 @@
       "path": "lib/feedback.js",
       "size": 3468,
       "sha256": "e9316e081dbb54bc12feafc12deb655ea09058be5bf08c38f2fa500900ef938d"
+    },
+    {
+      "path": "lib/group-ui.js",
+      "size": 10167,
+      "sha256": "0201b52b3afc6216a9f5979f6c863243d354b92f03f8b6043152a4eaa610809d"
     },
     {
       "path": "lib/model.js",
@@ -186,8 +216,8 @@
     },
     {
       "path": "lib/store.js",
-      "size": 27531,
-      "sha256": "4fb19d09ea06eb16d6ed618c44bc0b352910bfb61b193d1eaa3cf70f24e951e4"
+      "size": 27841,
+      "sha256": "4a76dce3c56cfcb19d4838a96b2e649a2cc8a5129a10b332967361be4d9c7855"
     },
     {
       "path": "lib/task-sync-model.js",
@@ -222,7 +252,7 @@
     {
       "path": "lib/version.js",
       "size": 215,
-      "sha256": "b097eb234e5a31da4cbda07d7bc95a69788e3f5492086b8b1fd9beefc599cfa7"
+      "sha256": "b4ba868bab46e7f43125d759ed79fe2d94c4e0df820f64ec65af7ceef6a03115"
     },
     {
       "path": "lib/weather.js",
@@ -236,28 +266,28 @@
     },
     {
       "path": "manifest.json",
-      "size": 1677,
-      "sha256": "1dcfba5f375aed650a59f058383402cbd7b9018671bf08510b5aac8038106d37"
+      "size": 1680,
+      "sha256": "e5613168baa3ee9d4a5a4f782717466f7992a4577003e018aef7cccc472d75fa"
     },
     {
       "path": "newtab.html",
-      "size": 9537,
-      "sha256": "7ce2ed810efcdaafb31fda3863b616d61dac68e5912df8b039d6d92406eb664a"
+      "size": 9823,
+      "sha256": "7ed481df25b6fed8dcd47b72c246fc2cba07914910409d5c7bd1a5ae50c94755"
     },
     {
       "path": "PRIVACY.md",
-      "size": 9129,
-      "sha256": "03dec904778e66c30e07332ae9171406ac69bbe7a44bfcef020c609b48cc3dc4"
+      "size": 11799,
+      "sha256": "f42498896480cda05e031a3afdc87ddcd5b5c0a52099ab91e9f7a8093354d1df"
     },
     {
       "path": "README.md",
-      "size": 15433,
-      "sha256": "ed96deb9f485c4c883b2e9c324dbfe29bd0db76a589fa6d02caaaaaec0606226"
+      "size": 15913,
+      "sha256": "7223b44cdbafb7c0789c3ba29dd14e621d322a79244bf2955b3835b0bf357358"
     },
     {
       "path": "service-worker.js",
-      "size": 5349,
-      "sha256": "b66dae1e79d448ae6d1b076a562ee682abdcb22b67a71b7fc0760c14dbd90769"
+      "size": 5556,
+      "sha256": "a3461628afdf6bc0a906af5c030b2abd71c55db76594cec21ebf18b83483b50a"
     },
     {
       "path": "styles.css",
@@ -266,8 +296,8 @@
     },
     {
       "path": "VERIFY.md",
-      "size": 27879,
-      "sha256": "4888971873c2b414e7b42676bccd29406b141cde0c960e3c0dd934f267903a82"
+      "size": 28294,
+      "sha256": "11b3c3f0e853047646fb25b7850c951f6027f7e7d59fd5144e01cc93392e0ba3"
     }
   ]
 }

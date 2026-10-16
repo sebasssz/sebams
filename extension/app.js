@@ -2,6 +2,10 @@ import {installReminderInbox} from './lib/reminder-ui.js';
 import {placeLink,bindSortable} from './lib/sortable.js';
 import {checkForUpdates,reloadAfterUpdate} from './lib/updates.js';
 import {needsRuntimeReload} from './lib/version.js';
+import {getAccount,privateValue} from './lib/account-store.js';
+import {getGroups,refreshGroups,syncAccount} from './lib/account.js';
+import {renderAccount} from './lib/account-ui.js';
+import {renderGroups,selectedGroup} from './lib/group-ui.js';
 import {getUpdatePreferences,patchUpdatePreferences} from './lib/store.js';
 import {createTask} from './lib/planner.js';
 import {renderTaskExtras,renderToolsView,refreshTaskClock} from './lib/task-tools-ui.js';
@@ -29,6 +33,7 @@ let selectedBackground, selectedQuote, backgroundURL, backgroundToken = 0, curre
 let focusEditing = false, focusOriginal = '', toastTimer, noteTimer, notesDirty = false, notesBase = 0, noteWorkspace = '', lastCompletedAt = null, dashboardDay = '';
 let photoAccess=false, photosBusy=false, photosError='', rotationSlot='', backgroundFallbackKey='';
 let linksMode='browse', linksMenu=false;
+let taskSpace='personal',accountConfig={enabled:false,account:null},groupCache={groups:[],details:{}},accountConflict=null,accountRecovery=false;
 let taskTool=null,weekOffset=0,openCommands,lastTaskSyncKey='',reminderInbox,openProfiles;
 let taskDetailId=null, bridgeConfig={token:''}, bridgeStatus='', bridgeBusy=false, chatGPTConfig={enabled:false,userId:'',nonce:'',conflicts:[],lastSyncAt:0,status:'Not connected.'},chatGPTBusy=false;
 let updatePrefs={autoCheck:false,lastCheckedAt:0,availableVersion:''},updateResult=null,updateStatus='',updateBusy=false,updateSource=null,updateSourceStatus='';
@@ -43,7 +48,7 @@ const run = fn => async (...args) => {
   try { return await fn(...args); } catch (error) { if (!error.sebamsShown) toast(error.message || 'Something went wrong. Please try again.'); }
   finally { controls.forEach(([control, disabled]) => { control.disabled = disabled; }); }
 };
-const save = async fn => { const result = await mutate(fn); state = result; syncTaskAlarm(); chrome.runtime.sendMessage({type:'chatgpt-sync'}).catch(()=>{}); return result; };
+const save = async fn => { const result = await mutate(fn); state = result; syncTaskAlarm(); chrome.runtime.sendMessage({type:'chatgpt-sync'}).catch(()=>{});chrome.runtime.sendMessage({type:'account-sync'}).catch(()=>{}); return result; };
 const btn = (text, fn, cls = 'secondary', attrs = {}) => el('button', { type: 'button', class: cls, onclick: run(fn), ...attrs }, text);
 const ibtn = (name, label, fn, attrs = {}) => btn(icon(name), fn, 'icon-button', { 'aria-label': label, title: label, ...attrs });
 const help = text => el('p', { class: 'help' }, text);
@@ -59,7 +64,7 @@ function toast(message, action, label = 'Undo') {
 }
 async function openPanel(name) {
   if (notesDirty) { try { await flushNotes(); } catch { return; } }
-  panelName = name; editingTask = null; editingLink = null;
+  panelName = name; editingTask = null; editingLink = null;if(name==='tasks')taskSpace='personal';
   taskDetailId=null;taskTool=null;
   creatingTaskList = false;
   editingList = null;
@@ -82,7 +87,7 @@ function renderPanel() {
   const matches = item => previous && (previous.label ? item.getAttribute('aria-label') === previous.label : item.tagName === previous.tag && item.textContent === previous.text);
   if (previous) previous.ordinal = [...body.querySelectorAll(selector)].filter(matches).indexOf(active);
   const scroll = panel.scrollTop, settingsScroll=body.querySelector('.settings-content')?.scrollTop||0;
-  const disclosures=[...body.querySelectorAll('details')].map(node=>({label:node.querySelector('summary')?.textContent,open:node.open}));
+  const disclosures=[...body.querySelectorAll('details:not(.task-space-menu)')].map(node=>({label:node.querySelector('summary')?.textContent,open:node.open}));
   const taskScroll = body.querySelector('.task-list')?.scrollTop || 0, navigationScroll = body.querySelector('.task-navigation')?.scrollTop || 0;
   const viewScroll = body.querySelector('.task-smart-views')?.scrollLeft || 0, collectionScroll = body.querySelector('.task-collections')?.scrollLeft || 0;
   $('panel-title').textContent = ({ settings: 'Settings', backgrounds: 'A change of scenery', quotes: 'Words to carry with you', tasks: 'Tasks', links: 'Links', weather: 'A glance outside', timer: 'Make space for focus', notes: 'A place for your thoughts', habits: 'Small steps, every day' })[panelName];
@@ -91,7 +96,7 @@ function renderPanel() {
   body.replaceChildren();
   ({ settings: renderSettings, backgrounds: renderBackgrounds, quotes: renderQuotes, tasks: renderTasks, links: renderLinks, weather: renderWeatherPanel, timer: renderTimerPanel, notes: renderNotes, habits: renderHabits })[panelName]();
   if(panelName==='settings'){decorateSettings(body,settingsTab);body.querySelector('.settings-content').scrollTop=settingsScroll;}
-  const used=new Set();for(const node of body.querySelectorAll('details')){const index=disclosures.findIndex((old,i)=>!used.has(i)&&old.label===node.querySelector('summary')?.textContent);if(index>=0){node.open=disclosures[index].open;used.add(index);}}
+  const used=new Set();for(const node of body.querySelectorAll('details:not(.task-space-menu)')){const index=disclosures.findIndex((old,i)=>!used.has(i)&&old.label===node.querySelector('summary')?.textContent);if(index>=0){node.open=disclosures[index].open;used.add(index);}}
   if(panelName==='tasks'){body.querySelector('.task-list').scrollTop=taskScroll;body.querySelector('.task-navigation').scrollTop=navigationScroll;body.querySelector('.task-smart-views').scrollLeft=viewScroll;body.querySelector('.task-collections').scrollLeft=collectionScroll;}
   if (previous) {
     const controls = [...body.querySelectorAll(selector)];
@@ -196,8 +201,9 @@ async function updateWeather(force = false) {
   finally { weatherBusy = false; renderWeatherSummary(); if (panelName === 'weather') renderPanel(); }
 }
 function renderSettings() {
-  body.append(el('nav', { class: 'tabs', 'aria-label': 'Settings categories' }, ['general', 'appearance', 'workspace', 'chatgpt', 'updates', 'suggestions', 'data'].map(tab => btn(settingsLabel(tab), async () => { settingsTab = tab;if(tab==='chatgpt')chatGPTConfig=await getChatGPTConnection();if(tab==='updates'){updatePrefs=await getUpdatePreferences();await loadUpdateSource();}if(body.querySelector('.settings-content'))body.querySelector('.settings-content').scrollTop=0;renderPanel(); }, settingsTab === tab ? 'selected' : '', { 'data-category':tab,'aria-pressed': settingsTab === tab }))));
+  body.append(el('nav', { class: 'tabs', 'aria-label': 'Settings categories' }, ['general', 'appearance', 'account', 'workspace', 'chatgpt', 'updates', 'suggestions', 'data'].map(tab => btn(settingsLabel(tab), async () => { settingsTab = tab;if(tab==='account')await loadAccountMeta();if(tab==='chatgpt')chatGPTConfig=await getChatGPTConnection();if(tab==='updates'){updatePrefs=await getUpdatePreferences();await loadUpdateSource();}if(body.querySelector('.settings-content'))body.querySelector('.settings-content').scrollTop=0;renderPanel(); }, settingsTab === tab ? 'selected' : '', { 'data-category':tab,'aria-pressed': settingsTab === tab }))));
   if(needsRuntimeReload())body.append(el('section',{class:'runtime-reload stack',role:'status'},el('strong',{},'Finish updating Sebams'),help('The page files were updated, but Chrome is still running the previous extension. Reload the extension to finish updating and restore task synchronization. Your saved data stays on this device.'),btn('Finish update and reload',async()=>{await saveBeforeUpdate();await reloadAfterUpdate();},'primary')));
+  if(settingsTab==='account'){renderAccount({body,config:accountConfig,conflict:accountConflict,recovery:accountRecovery,refresh:loadAccountMeta,render:renderPanel,run,toast,state});return;}
   if (settingsTab === 'general') {
     body.append(el('div', { class: 'stack' }, field('What should we call you?', input(state.prefs.name, { maxlength: 60, onchange: run(e => save(s => { s.prefs.name = e.target.value.trim(); })) })), el('div', { class: 'field-grid' }, field('Clock format', select(String(state.prefs.clock24), [['false', '12-hour · 2:30 PM'], ['true', '24-hour · 14:30']], e => save(s => { s.prefs.clock24 = e.target.value === 'true'; }))), field('Search provider', select(state.prefs.searchProvider, Object.entries(SEARCH_PROVIDERS).map(([id, p]) => [id, p.label]), e => save(s => { s.prefs.searchProvider = e.target.value; }))))));
     body.append(toggle('Show the date', state.prefs.showDate, value => save(s => { s.prefs.showDate = value; })), help('Search opens your chosen provider only when you submit. Your address bar stays ready when a new tab opens.'));
@@ -219,7 +225,7 @@ function renderSettings() {
     renderFeedback(body);
   } else {
     const file = input('', { type: 'file', accept: '.json,application/json', 'aria-label': 'Choose a Sebams backup', onchange: run(async e => { const f = e.target.files[0]; if (!f) return; if (f.size > 95 * 1024 * 1024) throw new Error('Choose a backup smaller than 95 MB.'); const backup = JSON.parse(await f.text()); const previous = await exportBackup(); const restore = async (value, revision = null) => { const restored = await importBackup(value, revision); state = getState(); currentBackgroundKey = ''; taskDrafts.clear(); renderDashboard(); renderPanel(); syncTimerAlarm(); return restored; }; const restored = await restore(backup); toast('Backup restored.', () => restore(previous, restored.revision)); }) });
-    body.append(help('Your tasks, notes, and preferences stay on this device. Backups include task photos, AI answers, uploaded backgrounds and photo credits. Connection codes and online photo caches are excluded.'), btn('Download a backup', async () => { downloadJSON(await exportBackup(), `sebams-backup-${localDay()}.json`); toast('Your backup is ready to save.'); }, 'primary'), el('div', { class: 'section' }, field('Restore a backup · replaces local Sebams data', file)), help('A restored backup can be undone immediately. Import only a backup you trust; it may contain private notes and images.'), el('div', { class: 'divider' }), help('Sebams '+chrome.runtime.getManifest().version+' · Local by default. Connecting ChatGPT synchronizes your task information with your account.'));
+    body.append(help('Your information is saved locally and also syncs privately when you enable a Sebams account. Backups include personal tasks, notes, photos and settings. Account tokens, group data and online photo caches are excluded.'), btn('Download a backup', async () => { downloadJSON(await exportBackup(), `sebams-backup-${localDay()}.json`); toast('Your backup is ready to save.'); }, 'primary'), el('div', { class: 'section' }, field('Restore a backup · replaces local Sebams data', file)), help('A restored backup can be undone immediately. Import only a backup you trust; it may contain private notes and images.'), el('div', { class: 'divider' }), help('Sebams '+chrome.runtime.getManifest().version+' · Local by default. Connecting ChatGPT synchronizes your task information with your account.'));
   }
 }
 function renderUpdateSettings(){
@@ -264,7 +270,7 @@ function renderBridgeConnectionSettings(){
   body.append(el('details',{class:'section disclosure',open:!bridgeConfig.token},el('summary',{},'Local update installer'),help('This connection is only for installing extension updates on this PC. The ChatGPT task plugin works independently.'),el('form',{class:'add-form',onsubmit:run(async e=>{e.preventDefault();const token=code.value.trim();if(!/^[A-Za-z0-9_-]{32,128}$/.test(token)||token.startsWith('sk-')||token.startsWith('AIza'))throw Error('Use the connection code from Sebams Bridge.');if(!await requestBridgeAccess())throw Error('Local installer access was declined.');bridgeBusy=true;try{await bridgeRequest('/health',token,{timeout:6000});await setBridgeConfig({token});bridgeConfig={token};bridgeStatus='Update installer connected.';await loadUpdateSource();chrome.runtime.sendMessage({type:'update-sync'}).catch(()=>{});}catch(error){bridgeStatus=error.message;throw error;}finally{bridgeBusy=false;renderPanel();}})},field('Local update connection code',code),el('button',{type:'submit',class:'secondary',disabled:bridgeBusy},bridgeConfig.token?'Reconnect installer':'Connect update installer')),el('p',{role:'status',class:'help'},bridgeStatus||(bridgeConfig.token?'Connection saved. Start Bridge when installing updates.':'Optional. No AI API key is needed.'))));
 }
 function renderChatGPTSettings(){
-  body.append(el('section',{class:'stack chatgpt-settings'},el('span',{class:'eyebrow'},'SEBAMS + CHATGPT'),el('h3',{},'Your tasks, in the conversation'),help('Connect the Sebams plugin in ChatGPT to ask what is due tomorrow, create tasks with a date and priority, or mark them complete. ChatGPT supplies the AI; no AI API key or Sebams Bridge is needed.'),help('Connecting privately synchronizes task titles, details, lists, dates, priorities and completion with your ChatGPT account. Photos, backgrounds and general notes remain on this device.'),row(btn(chatGPTConfig.enabled?'Reconnect ChatGPT':'Connect ChatGPT',async()=>{await connectChatGPT();chatGPTConfig=await getChatGPTConnection();renderPanel();},'primary'),chatGPTConfig.enabled?btn('Sync now',async()=>{chatGPTBusy=true;renderPanel();try{if(needsRuntimeReload())throw Error('Reload Sebams to finish updating, then sync again.');const result=await chrome.runtime.sendMessage({type:'chatgpt-sync'});if(!result?.ok)throw Error(result?.error||'Open the connection page and try again.');}finally{chatGPTBusy=false;chatGPTConfig=await getChatGPTConnection();renderPanel();}},'secondary',{disabled:chatGPTBusy}):null),el('p',{class:'bridge-status',role:'status'},chatGPTConfig.status)));
+  body.append(el('section',{class:'stack chatgpt-settings'},el('span',{class:'eyebrow'},'SEBAMS + CHATGPT'),el('h3',{},'Your tasks, in the conversation'),help('Connect the Sebams plugin in ChatGPT to ask what is due tomorrow, create tasks with a date and priority, or mark them complete. ChatGPT supplies the AI; no AI API key or Sebams Bridge is needed.'),help('Connecting privately synchronizes task titles, details, lists, dates, priorities and completion with your ChatGPT account. ChatGPT does not receive photos, backgrounds or general notes. A separate Sebams account can sync them privately across your devices.'),row(btn(chatGPTConfig.enabled?'Reconnect ChatGPT':'Connect ChatGPT',async()=>{await connectChatGPT();chatGPTConfig=await getChatGPTConnection();renderPanel();},'primary'),chatGPTConfig.enabled?btn('Sync now',async()=>{chatGPTBusy=true;renderPanel();try{if(needsRuntimeReload())throw Error('Reload Sebams to finish updating, then sync again.');const result=await chrome.runtime.sendMessage({type:'chatgpt-sync'});if(!result?.ok)throw Error(result?.error||'Open the connection page and try again.');}finally{chatGPTBusy=false;chatGPTConfig=await getChatGPTConnection();renderPanel();}},'secondary',{disabled:chatGPTBusy}):null),el('p',{class:'bridge-status',role:'status'},chatGPTConfig.status)));
   if(chatGPTConfig.enabled){const page=CHATGPT_ORIGIN+'/connect?extension='+chrome.runtime.id+'&nonce='+encodeURIComponent(chatGPTConfig.nonce);body.append(row(el('a',{href:page,target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open connection page'),btn('Disconnect ChatGPT',async()=>{await disconnectChatGPT();chatGPTConfig=await getChatGPTConnection();renderPanel();},'text-button')));if(chatGPTConfig.lastSyncAt)body.append(help('Last synced: '+new Date(chatGPTConfig.lastSyncAt).toLocaleString()));}
   body.append(el('section',{class:'section stack'},el('h3',{},'Use the Sebams plugin'),help('Connect your own account in ChatGPT → Plugins → + → Add custom MCP server. Name it Sebams and use the server URL below with OAuth authentication. Then install your plugin and select @Sebams in a chat. You do not need the extension owner to approve your account.'),field('MCP server URL',input(CHATGPT_ORIGIN+'/mcp',{readonly:true})),btn('Copy server URL',async()=>{await navigator.clipboard.writeText(CHATGPT_ORIGIN+'/mcp');toast('Server URL copied. Add it in ChatGPT → Plugins.');},'secondary'),help('If you already have Sebams installed, keep using it. Each account has its own tasks. ChatGPT may still ask you to install or authorize the connection; those prompts are controlled by ChatGPT.'),el('p',{class:'help'},'“What tasks do I have tomorrow?”'),el('p',{class:'help'},'“Add reviewing maths for tomorrow with high priority.”'),el('a',{href:'https://chatgpt.com/',target:'_blank',rel:'noopener noreferrer',class:'text-button'},'Open ChatGPT')));
   for(const conflict of chatGPTConfig.conflicts||[])body.append(el('section',{class:'section stack'},el('h4',{},'Choose which change to keep'),help(conflict.local?.text||conflict.remote?.text||conflict.local?.name||conflict.remote?.name||'Profile and task lists'),el('p',{},'Sebams: '+(conflict.local?describe(conflict.local):'Removed')),el('p',{},'ChatGPT: '+(conflict.remote?describe(conflict.remote):'Removed')),row(btn('Keep Sebams',()=>choose(conflict.key,'local'),'secondary'),btn('Keep ChatGPT',()=>choose(conflict.key,'cloud'),'secondary'))));
@@ -330,34 +336,39 @@ function renderQuotes() {
 }
 function toggleID(items, id) { const i = items.indexOf(id); if (i >= 0) items.splice(i, 1); else items.push(id); }
 function itemConflict(items, id, oldText, field = 'text') { const item = items.find(i => i.id === id); if (!item || item[field] !== oldText) throw new Error('This item changed in another tab. Reopen it to edit the latest version.'); return item; }
+async function loadAccountMeta(){[accountConfig,groupCache,accountConflict,accountRecovery]=await Promise.all([getAccount(),getGroups(),privateValue('account-conflict'),privateValue('account-recovery')]);}
+async function openGroups(){taskSpace='groups';taskTool=null;taskDetailId=null;await loadAccountMeta();renderPanel();if(accountConfig.enabled){try{await refreshGroups(selectedGroup());}catch(error){toast(error.message);}await loadAccountMeta();if(panelName==='tasks')renderPanel();}}
+function taskScopeMenu(){return el('details',{class:'task-space-menu'},el('summary',{'aria-label':'Choose task space',title:'Choose personal tasks or Groups'},icon('down')),el('div',{class:'task-space-options'},btn('Personal tasks',()=>{taskSpace='personal';renderPanel();},'text-button'),btn('Groups',openGroups,'text-button')));}
 function renderTasks() {
   const wsid = state.workspace, w = workspace(), day = localDay();
   if (taskList !== null && !w.lists.includes(taskList)) taskList = null;
-  const chooseView = (list, filter = 'all') => { taskTool=null;taskList=list; taskDateFilter=filter; editingTask=null; taskDetailId=null; editingList=null; creatingTaskList=false; renderPanel(); body.querySelector('.task-list').scrollTop=0; };
+  const chooseView = (list, filter = 'all') => { taskSpace='personal';taskTool=null;taskList=list; taskDateFilter=filter; editingTask=null; taskDetailId=null; editingList=null; creatingTaskList=false; renderPanel(); body.querySelector('.task-list').scrollTop=0; };
   const navigation=el('nav',{class:'task-navigation','aria-label':'Task navigation'});
   const navButton=(label, symbol, count, active, action, accessible)=>btn([icon(symbol),el('span',{class:'task-nav-label'},label),el('span',{class:'task-nav-count','aria-hidden':'true'},count)],action,`task-nav-button${active?' selected':''}`,{'aria-label':accessible,'aria-pressed':String(active)});
-  const pending=w.tasks.filter(task=>!task.done), globalFilter=taskList===null&&!taskTool;
+  const pending=w.tasks.filter(task=>!task.done), globalFilter=taskSpace==='personal'&&taskList===null&&!taskTool;
   navigation.append(el('div',{class:'task-smart-views'},
     navButton('All tasks','list',pending.length,globalFilter&&!['today','upcoming','completed'].includes(taskDateFilter),()=>chooseView(null),'Show all tasks'),
     navButton('Today','sun',pending.filter(task=>task.dueDate===day).length,globalFilter&&taskDateFilter==='today',()=>chooseView(null,'today'),"Show today's tasks"),
     navButton('Upcoming','calendar',pending.filter(task=>task.dueDate>day).length,globalFilter&&taskDateFilter==='upcoming',()=>chooseView(null,'upcoming'),'Show upcoming tasks'),
     navButton('Completed','complete',w.tasks.filter(task=>task.done).length,globalFilter&&taskDateFilter==='completed',()=>chooseView(null,'completed'),'Show completed tasks')));
   const collections=el('section',{class:'task-collections'},el('div',{class:'task-section-label'},'MY LISTS'));
-  for(const name of w.lists)collections.append(navButton(name,name==='Inbox'?'inbox':'list',pending.filter(task=>task.list===name).length,taskList===name&&!taskTool,()=>chooseView(name),`Show list ${name}`));
-  collections.append(btn([icon('plus'),el('span',{},'New list')],()=>{creatingTaskList=!creatingTaskList;renderPanel();if(creatingTaskList)body.querySelector('[aria-label="New list name"]').focus();},'task-new-list',{'aria-label':'New list',disabled:w.lists.length>=20&&!creatingTaskList}));
+  for(const name of w.lists)collections.append(navButton(name,name==='Inbox'?'inbox':'list',pending.filter(task=>task.list===name).length,taskSpace==='personal'&&taskList===name&&!taskTool,()=>chooseView(name),`Show list ${name}`));
+  collections.append(btn([icon('plus'),el('span',{},'New list')],()=>{taskSpace='personal';creatingTaskList=!creatingTaskList;renderPanel();if(creatingTaskList)body.querySelector('[aria-label="New list name"]').focus();},'task-new-list',{'aria-label':'New list',disabled:w.lists.length>=20&&!creatingTaskList}));
   if(creatingTaskList){
     const name=input('',{maxlength:40,placeholder:'Subject or list name',required:true,'aria-label':'New list name'});
     navigation.append(el('form',{class:'task-list-form',onsubmit:run(async e=>{e.preventDefault();const value=name.value.trim();if(!value)return;await save(s=>{const lists=s.workspaces[wsid].lists;if(!lists.includes(value)){if(lists.length>=20)throw Error('Keep up to 20 lists in each workspace.');lists.push(value);}});creatingTaskList=false;taskList=value;taskDateFilter='all';renderPanel();})},name,row(el('button',{type:'submit',class:'primary'},'Create'),btn('Cancel',()=>{creatingTaskList=false;renderPanel();},'text-button'))));
   }
+  collections.append(navButton('Groups','people',groupCache.groups.filter(g=>g.deletedAt===null).length,taskSpace==='groups',openGroups,'Show groups'));
   navigation.insertBefore(collections,navigation.querySelector('.task-list-form'));
-  navigation.append(el('section',{class:'task-tools-nav'},el('div',{class:'task-section-label'},'PLAN & REVIEW'),...Object.entries({calendar:'Calendar',exams:'Exam planner',templates:'Templates',progress:'Progress'}).map(([id,label])=>btn([icon(id==='calendar'||id==='exams'?'calendar':'list'),el('span',{},label)],()=>{taskTool=id;taskDetailId=null;renderPanel();},`task-nav-button${taskTool===id?' selected':''}`,{'aria-label':`Show ${label}`,'aria-pressed':String(taskTool===id)}))));
+  navigation.append(el('section',{class:'task-tools-nav'},el('div',{class:'task-section-label'},'PLAN & REVIEW'),...Object.entries({calendar:'Calendar',exams:'Exam planner',templates:'Templates',progress:'Progress'}).map(([id,label])=>btn([icon(id==='calendar'||id==='exams'?'calendar':'list'),el('span',{},label)],()=>{taskSpace='personal';taskTool=id;taskDetailId=null;renderPanel();},`task-nav-button${taskTool===id?' selected':''}`,{'aria-label':`Show ${label}`,'aria-pressed':String(taskTool===id)}))));
   const sidebar=el('aside',{class:'task-sidebar'},el('div',{class:'task-side-heading'},icon('check'),el('h2',{},'Tasks')),navigation);
   const content=el('section',{class:'task-content','aria-labelledby':'task-view-title'});
   const matches = task => (taskList === null || task.list === taskList) && matchesTaskDate(task, taskDateFilter), tasks = w.tasks.filter(matches), list = el('ul', { class: 'task-list list','aria-label':'Tasks in this view' });
   const title=taskList!==null?taskList:({today:'Today',upcoming:'Upcoming',completed:'Completed',overdue:'Overdue',undated:'No date',all:'All tasks'})[taskDateFilter];
   const viewIcon=taskList!==null?(taskList==='Inbox'?'inbox':'list'):({today:'sun',upcoming:'calendar',completed:'complete',all:'list',overdue:'calendar',undated:'list'})[taskDateFilter];
-  content.append(el('header',{class:'task-content-heading'},el('div',{class:'task-view-name'},icon(viewIcon),el('div',{},el('h2',{id:'task-view-title'},title),el('p',{class:'task-view-summary'},`${tasks.filter(task=>!task.done).length} open · ${tasks.filter(task=>task.done).length} completed`))),select(taskDateFilter,[['all','All dates'],['today','Today'],['upcoming','Upcoming'],['overdue','Overdue'],['undated','No date'],['completed','Completed']],e=>{taskDateFilter=e.target.value;editingTask=null;renderPanel();},{'aria-label':'Task dates',class:'task-date-filter'})),list);
+  content.append(el('header',{class:'task-content-heading'},el('div',{class:'task-view-name'},icon(viewIcon),el('div',{},el('div',{class:'task-title-with-menu'},el('h2',{id:'task-view-title'},title),taskScopeMenu()),el('p',{class:'task-view-summary'},`${tasks.filter(task=>!task.done).length} open · ${tasks.filter(task=>task.done).length} completed`))),select(taskDateFilter,[['all','All dates'],['today','Today'],['upcoming','Upcoming'],['overdue','Overdue'],['undated','No date'],['completed','Completed']],e=>{taskDateFilter=e.target.value;editingTask=null;renderPanel();},{'aria-label':'Task dates',class:'task-date-filter'})),list);
   body.append(el('div',{class:'task-shell'},sidebar,content));
+  if(taskSpace==='groups'){renderGroups(content,{config:accountConfig,cache:groupCache,refresh:async id=>{if(accountConfig.enabled){await refreshGroups(id);}await loadAccountMeta();},render:renderPanel,run,toast,openAccount:async()=>{settingsTab='account';await openPanel('settings');},scopeMenu:taskScopeMenu});return;}
   if(taskTool){renderToolsView(content,taskTool,taskToolsContext(wsid));return;}
   const selectedTask=w.tasks.find(task=>task.id===taskDetailId);
   if(selectedTask){renderTaskDetail(content,list,selectedTask,wsid);return;}
@@ -437,7 +448,7 @@ function renderTaskDetail(content,list,task,wsid){
   list.replaceChildren();content.replaceChildren(heading,list);list.classList.add('task-detail-scroll');
   const detail=el('li',{class:'task-detail stack'},field('Enunciado / task details',details),row(btn('Save details',async()=>{await saveDetails();toast('Task details saved.');},'secondary'),btn('Load saved details',()=>{const latest=getState().workspaces[wsid].tasks.find(t=>t.id===task.id);if(!latest)throw Error('This task was deleted.');draft.details=draft.base=latest.details;renderPanel();},'text-button',{title:'Replace this draft with the saved task details'}),btn(task.done?'Mark unfinished':'Mark complete',async()=>{await saveDetails();await save(s=>{const item=s.workspaces[wsid].tasks.find(t=>t.id===task.id);if(item)item.done=!item.done;});renderPanel();},'text-button')));
   list.append(detail);
-  const attachmentSection=el('section',{class:'task-attachments section'},el('div',{class:'row between'},el('h3',{},'Photos'),el('span',{class:'help'},`${task.attachments.length}/4`)),help('JPG, PNG or WebP · up to 8 MB each. Keep instructions or examples here for your own reference. Photos stay on this device. Download a photo when you want to attach it in ChatGPT.'));
+  const attachmentSection=el('section',{class:'task-attachments section'},el('div',{class:'row between'},el('h3',{},'Photos'),el('span',{class:'help'},`${task.attachments.length}/4`)),help('JPG, PNG or WebP · up to 8 MB each. Keep instructions or examples here for your own reference. Photos sync privately if you enable a Sebams account. Download a photo when you want to attach it in ChatGPT.'));
   const upload=input('',{type:'file',accept:'image/jpeg,image/png,image/webp',multiple:true,'aria-label':'Attach task photos',disabled:task.attachments.length>=4,onchange:run(async e=>{
     const files=[...e.target.files];if(!files.length)return;if(task.attachments.length+files.length>4)throw Error('Attach up to four photos to a task.');
     await saveDetails();try{for(const file of files)await putTaskAttachment(wsid,task.id,file);toast('Photos attached.');}finally{renderPanel();}
@@ -599,7 +610,7 @@ async function tick() {
 }
 async function boot() {
   state = await initStore(); await save(s => { rollover(s); s.timer = reconcileTimer(s.timer);if(s.prefs.panelBlur>0){s.prefs.panelBlur=0;s.prefs.panelOpacity=Math.max(s.prefs.panelOpacity,88);} });
-  bridgeConfig=await getBridgeConfig();chatGPTConfig=await getChatGPTConnection();
+  bridgeConfig=await getBridgeConfig();chatGPTConfig=await getChatGPTConnection();await loadAccountMeta();
   photoAccess=await hasPhotoAccess();
   globalThis.chrome?.permissions?.onRemoved?.addListener(()=>{hasPhotoAccess().then(access=>{photoAccess=access;if(panelName==='backgrounds')renderPanel();}).catch(()=>{});});
   lastCompletedAt = state.timer.completedAt || 0; installHandlers();installCommands();
@@ -607,6 +618,7 @@ async function boot() {
   subscribe(next => { if(state.workspace!==next.workspace){taskList=null;taskDateFilter='all';taskDetailId=null;}state = next; syncTaskAlarm();renderDashboard(); if (panelName && panel.open && !notesDirty && !['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement?.tagName)) renderPanel(); });
   renderDashboard(); syncTimerAlarm();syncTaskAlarm(); updateWeather(); setInterval(run(tick), 1000); setInterval(() => updateWeather(), 30 * 60 * 1000);
   chrome.runtime.sendMessage({type:'chatgpt-sync'}).catch(()=>{});setInterval(async()=>{if(panelName==='settings'&&settingsTab==='chatgpt'&&!chatGPTBusy){chatGPTConfig=await getChatGPTConnection();renderPanel();}},10000);
+  chrome.runtime.sendMessage({type:'account-sync'}).catch(()=>{});setInterval(async()=>{if(!panel.open||['INPUT','TEXTAREA','SELECT'].includes(document.activeElement?.tagName))return;if(panelName==='settings'&&settingsTab==='account'){await loadAccountMeta();renderPanel();}else if(panelName==='tasks'&&taskSpace==='groups'&&accountConfig.enabled){try{await refreshGroups(selectedGroup());}catch{}await loadAccountMeta();renderPanel();}},30000);
   const deepLink=new URLSearchParams(location.search);if(deepLink.has('task')){const wsid=deepLink.get('workspace');if(Object.hasOwn(state.workspaces,wsid))await save(s=>{s.workspace=wsid;});await openTaskById(deepLink.get('task'));}
   else await reminderInbox.show();
   pruneTaskAttachments().catch(()=>{});setInterval(()=>pruneTaskAttachments().catch(()=>{}),60000);

@@ -59,8 +59,8 @@ export const TOOLS=[
 export async function handleMcp(body,{db,owner,now=()=>Date.now()}){
   const id=body?.id??null,reply=result=>({jsonrpc:'2.0',id,result});
   if(!body||body.jsonrpc!=='2.0'||typeof body.method!=='string')return {jsonrpc:'2.0',id,error:{code:-32600,message:'Invalid request'}};
-  if(body.method==='server/discover')return reply({supportedVersions:['2026-07-28'],capabilities:{tools:{}},serverInfo:{name:'sebams',version:'2.0.0'}});
-  if(body.method==='initialize')return reply({protocolVersion:'2026-07-28',capabilities:{tools:{}},serverInfo:{name:'sebams',version:'2.0.0'}});
+  if(body.method==='server/discover')return reply({supportedVersions:['2026-07-28'],capabilities:{tools:{}},serverInfo:{name:'sebams',version:'2.1.0'}});
+  if(body.method==='initialize')return reply({protocolVersion:'2026-07-28',capabilities:{tools:{}},serverInfo:{name:'sebams',version:'2.1.0'}});
   if(body.method==='notifications/initialized')return null;
   if(body.method==='ping')return reply({});
   if(body.method==='tools/list')return reply({tools:TOOLS});

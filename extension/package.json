@@ -1,6 +1,6 @@
 {
   "name": "sebams",
-  "version": "2.0.1",
+  "version": "2.1.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -17,7 +17,8 @@
     "test:feedback": "node tests/browser-feedback.mjs",
     "test:revamp": "node tests/browser-revamp.mjs",
     "test:links-recovery": "node tests/browser-links-recovery.mjs",
-    "test:connection-recovery": "node tests/browser-connection-recovery.mjs"
+    "test:connection-recovery": "node tests/browser-connection-recovery.mjs",
+    "test:accounts": "node tests/browser-accounts-groups.mjs"
   },
   "devDependencies": {
     "playwright": "1.62.1"

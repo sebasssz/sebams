@@ -1,3 +1,4 @@
+import {syncAccount,ACCOUNT_ALARM} from './lib/account.js';
 import {initStore,getState,mutate} from './lib/store.js';
 import {syncChatGPT,handleChatGPTMessage,CHATGPT_ALARM} from './lib/chatgpt.js';
 import {remaining,reconcileTimer} from './lib/timer.js';
@@ -30,12 +31,14 @@ chrome.permissions.onRemoved.addListener(()=>syncTasks().catch(console.error));
 const NAME='sebams-timer';
 chrome.alarms.clear('sebams-bridge').catch(()=>{});
 async function sync(){await initStore();const timer=getState().timer;if(timer.status==='running'&&remaining(timer)===0)await mutate(s=>{s.timer=reconcileTimer(s.timer);});const current=getState().timer;if(current.status==='running')await chrome.alarms.create(NAME,{when:Math.max(Date.now()+500,current.endsAt)});else await chrome.alarms.clear(NAME);}
-chrome.runtime.onMessage.addListener((message,sender,reply)=>{if(sender.id!==chrome.runtime.id||!['timer-sync','chatgpt-sync','task-sync','update-sync'].includes(message?.type))return;(message.type==='update-sync'?syncUpdateCheck():message.type==='chatgpt-sync'?syncChatGPT():message.type==='task-sync'?syncTasks():sync()).then(result=>reply({ok:true,...(message.type==='update-sync'?{updates:result}:result||{})}),error=>reply({ok:false,error:error.message}));return true;});
+chrome.runtime.onMessage.addListener((message,sender,reply)=>{if(sender.id!==chrome.runtime.id||!['timer-sync','chatgpt-sync','task-sync','update-sync','account-sync'].includes(message?.type))return;(message.type==='account-sync'?syncAccount():message.type==='update-sync'?syncUpdateCheck():message.type==='chatgpt-sync'?syncChatGPT():message.type==='task-sync'?syncTasks():sync()).then(result=>reply({ok:true,...(message.type==='update-sync'?{updates:result}:result||{})}),error=>reply({ok:false,error:error.message}));return true;});
 chrome.runtime.onMessageExternal.addListener((message,sender,reply)=>{handleChatGPTMessage(message,sender).then(result=>reply({ok:true,...result}),error=>reply({ok:false,error:error.message}));return true;});
-chrome.alarms.onAlarm.addListener(alarm=>{if(alarm.name===UPDATE_ALARM)syncUpdateCheck().catch(()=>{});if(alarm.name===NAME)sync().catch(console.error);if(alarm.name===CHATGPT_ALARM)syncChatGPT().catch(()=>{});if(alarm.name===TASKS)syncTasks().catch(console.error);});
+chrome.alarms.onAlarm.addListener(alarm=>{if(alarm.name===ACCOUNT_ALARM)syncAccount().catch(()=>{});if(alarm.name===UPDATE_ALARM)syncUpdateCheck().catch(()=>{});if(alarm.name===NAME)sync().catch(console.error);if(alarm.name===CHATGPT_ALARM)syncChatGPT().catch(()=>{});if(alarm.name===TASKS)syncTasks().catch(console.error);});
 chrome.runtime.onStartup.addListener(()=>{sync().catch(console.error);syncTasks().catch(console.error);});
 chrome.runtime.onInstalled.addListener(()=>{restoreUpdatedTab().catch(console.error);sync().catch(console.error);syncTasks().catch(console.error);setupCapture().catch(console.error);});
 sync().catch(console.error);
 syncChatGPT().catch(()=>{});
 syncTasks().catch(console.error);
 syncUpdateCheck().catch(()=>{});
+
+syncAccount().catch(()=>{});

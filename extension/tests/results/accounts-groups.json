@@ -1,0 +1,33 @@
+{
+  "results": [
+    {
+      "name": "Email code sign-in syncs personal data and photos while private session tokens stay out of backups",
+      "status": "pass"
+    },
+    {
+      "name": "A second device restores tasks, notes, links, habits, settings and the exact reference-photo bytes",
+      "status": "pass"
+    },
+    {
+      "name": "Independent device edits combine; a conflicting note requires an explicit choice and retains a recovery backup",
+      "status": "pass"
+    },
+    {
+      "name": "Inbox dropdown opens Groups and the leader receives a six-letter invite code",
+      "status": "pass"
+    },
+    {
+      "name": "Another person joins by code and can assign a task; only the responsible member can complete it",
+      "status": "pass"
+    },
+    {
+      "name": "Membership survives reload, only the leader manages the group, and Groups fits a phone viewport",
+      "status": "pass"
+    },
+    {
+      "name": "The leader can rename, confirm deletion, and restore the same group with membership and tasks intact",
+      "status": "pass"
+    }
+  ],
+  "errors": []
+}

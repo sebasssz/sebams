@@ -1,3 +1,4 @@
+import {getAccount} from './account-store.js';
 import {initStore,getChatGPTConnection,configureChatGPTConnection,setChatGPTStatus,prepareChatGPTSync,acceptChatGPTSync} from './store.js';
 import {planChanges} from './task-sync-model.js';
 export const CHATGPT_ORIGIN='https://sebams-connect.poeticbadge1.chatgpt.site';
@@ -14,7 +15,7 @@ export async function connectChatGPT(){
   const previous=await getChatGPTConnection(),nonce=crypto.randomUUID();await configureChatGPTConnection({enabled:true,nonce,...(!previous.enabled?{userId:''}:{}),connectionTabId:null,status:'Sign in on the connection page to finish linking.'});
   await chrome.tabs.create({url:CHATGPT_ORIGIN+'/connect?extension='+chrome.runtime.id+'&nonce='+encodeURIComponent(nonce)});
 }
-export async function disconnectChatGPT(){const config=await getChatGPTConnection();if(config.connectionTabId!==null)await chrome.tabs.remove(config.connectionTabId).catch(()=>{});await configureChatGPTConnection({enabled:false,nonce:'',connectionTabId:null,status:'Disconnected. Tasks remain on this device.'});await chrome.alarms.clear(CHATGPT_ALARM);await chrome.permissions.remove(permission);}
+export async function disconnectChatGPT(){const config=await getChatGPTConnection();if(config.connectionTabId!==null)await chrome.tabs.remove(config.connectionTabId).catch(()=>{});await configureChatGPTConnection({enabled:false,nonce:'',connectionTabId:null,status:'Disconnected. Tasks remain on this device.'});await chrome.alarms.clear(CHATGPT_ALARM);if(!(await getAccount()).enabled)await chrome.permissions.remove(permission);}
 async function fallbackConnection(){const config=await getChatGPTConnection();if(!config.enabled||!config.nonce)return;if(config.connectionTabId!==null){try{const tab=await chrome.tabs.get(config.connectionTabId),url=new URL(tab.url);if(url.origin===CHATGPT_ORIGIN&&url.pathname==='/connect'&&url.searchParams.get('extension')===chrome.runtime.id&&url.searchParams.get('nonce')===config.nonce)return;}catch{}}
   const tab=await chrome.tabs.create({active:false,url:CHATGPT_ORIGIN+'/connect?extension='+chrome.runtime.id+'&nonce='+encodeURIComponent(config.nonce)+'&auto=1'});try{await configureChatGPTConnection({enabled:true,nonce:config.nonce,expectedNonce:config.nonce,connectionTabId:tab.id,status:'Synchronizing through the connection page. Sign in there if needed.'});}catch(error){await chrome.tabs.remove(tab.id).catch(()=>{});throw error;}}
 export async function syncChatGPT(){

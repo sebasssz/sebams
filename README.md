@@ -1,33 +1,29 @@
-# Sebams 2.0
+# Sebams 2.1
 
-Una nueva pestaña para organizar tu día: tareas, perfiles, notas, enlaces, fondos, recordatorios y temporizador.
+Una nueva pestaña para organizar tu día: tareas, perfiles, notas, enlaces, fondos y herramientas de enfoque.
 
-## Nuevo diseño y perfiles
+## Cuenta y sincronización entre dispositivos
 
-El dashboard y los paneles comparten un diseño oscuro y neutro. Settings usa navegación lateral en escritorio y categorías deslizables en pantallas pequeñas. Tasks, Links, notas, fondos y las demás herramientas conservan sus funciones con controles más claros.
+**Settings → Account** prepara el inicio de sesión con correo y código de seis números. La cuenta sincroniza perfiles, tareas, detalles, notas, enlaces, hábitos, preferencias, fondos subidos y fotos de referencia. Los cambios independientes se combinan y los conflictos requieren una elección. Una copia local anterior permite recuperar datos. Los temporizadores en ejecución y los códigos de conexión siguen en su dispositivo.
 
-Usa el botón de perfil de la esquina superior izquierda para cambiar de espacio. **Settings → Profiles** permite crear hasta 12 perfiles activos, cambiar su nombre/color y eliminarlos con confirmación. **Recently deleted** conserva el contenido local y sus fotos hasta restaurarlo o confirmar su eliminación permanente. Los backups incluyen los perfiles eliminados.
+**Activación del correo pendiente:** el propietario debe configurar un remitente verificado de Brevo y los secretos del servidor. La extensión muestra un error claro mientras falta esta configuración; no simula el envío. Tus amigos solo necesitan iniciar sesión cuando el servicio esté activado. [Configuración del servidor](sites/sebams-connect/EMAIL-SETUP.md).
+
+## Sebams Groups
+
+En Tasks abre la flecha junto al nombre de la vista (por ejemplo Inbox) y elige **Groups**, o usa Groups en la barra lateral. **Create group** genera una invitación de seis letras; tus compañeros eligen **Join group** e introducen el código. La membresía se conserva al cerrar o cambiar de dispositivo.
+
+Todos pueden crear y asignar tareas con fecha y prioridad. Solo el responsable puede completarlas o reabrirlas. Solo el líder cambia el nombre, gestiona miembros y elimina el grupo. La eliminación pide confirmación y permite restaurar el grupo con sus miembros y tareas desde Deleted groups. Las tareas personales y fotos no se comparten con los miembros.
 
 ## Instalar o actualizar
 
-Descarga **Sebams.zip** en [Releases](https://github.com/sebasssz/sebams/releases/latest). Conserva la misma carpeta y la instalación de la extensión para mantener tus datos; actualiza los archivos y pulsa Reload en chrome://extensions o brave://extensions.
+Descarga **Sebams.zip** en [Releases](https://github.com/sebasssz/sebams/releases/latest). Conserva la carpeta y la instalación de la extensión para mantener tus datos, actualiza sus archivos y pulsa **Reload** en la página de extensiones. Actualiza todos tus dispositivos a 2.1.
 
-La versión 2.0 migra los datos existentes y convierte Personal, Work y Study en perfiles editables. **Actualiza todos los equipos conectados a la misma cuenta a 2.0.** Los clientes antiguos conservan los datos locales y piden actualizar antes de sincronizar una cuenta que ya usa perfiles.
+**Sebams-Bridge.zip** es el instalador opcional para la extensión desempaquetada. Cada PC elige su carpeta con SetupUpdates.cmd, inicia Bridge y conecta su código en Settings → Updates. El actualizador usa este repositorio, verifica **sebams-update.json** y conserva la versión anterior. Las cuentas y Groups funcionan en el servidor, sin Bridge.
 
-**Sebams-Bridge.zip** es el instalador opcional para la extensión desempaquetada. Cada PC elige su carpeta con SetupUpdates.cmd, inicia Bridge y conecta su código en Settings → Updates → Local update installer. Usa este repositorio como fuente de Releases. El actualizador verifica **sebams-update.json** y guarda la versión anterior.
+## Perfiles y ChatGPT
 
-## ChatGPT
+Settings → Profiles crea, renombra, colorea, elimina y restaura hasta 12 perfiles. La conexión opcional de ChatGPT sigue en Settings → ChatGPT. Su URL MCP es **https://sebams-connect.poeticbadge1.chatgpt.site/mcp**, con autenticación OAuth. La cuenta de Sebams y la conexión de ChatGPT son independientes; las fotos no se envían automáticamente a ChatGPT. Cambiar de cuenta de Sebams pausa la conexión anterior para evitar mezclar cuentas.
 
-Conecta tu propia cuenta desde **Settings → ChatGPT → Connect ChatGPT**. En ChatGPT abre **Plugins → + → Add custom MCP server**, usa el nombre Sebams y la URL **https://sebams-connect.poeticbadge1.chatgpt.site/mcp**, con autenticación OAuth. Instala la conexión y selecciona **@Sebams**. Si ya tienes la conexión instalada, puedes seguir usándola.
+[Guía 2.1](extension/GUIA-2.1.md) · [Privacidad y límites](extension/PRIVACY.md) · [Verificación](extension/VERIFY.md) · [Sugerencias](https://github.com/sebasssz/sebams/issues)
 
-El conector admite otras cuentas sin aprobación individual del creador y mantiene los datos separados por usuario. Reconoce los perfiles personalizados y sincroniza metadatos de perfiles/listas y tareas. Las fotos, notas, enlaces, hábitos y Recently deleted permanecen locales. La eliminación de un perfil conectado se sincroniza para su copia activa de tareas; si entra en conflicto con otra edición, conserva el perfil hasta que elijas qué versión mantener.
-
-No hace falta una clave de API de IA ni un servicio local para las tareas de ChatGPT. La instalación, los avisos de autorización y las políticas de cuenta dependen de ChatGPT. Publicar el servicio no equivale a una aprobación en el directorio público de plugins.
-
-## Sugerencias
-
-**Settings → Suggestions** prepara una idea o un reporte como borrador de GitHub. El usuario inicia sesión, revisa el texto y pulsa Create para enviarlo. Las sugerencias son públicas y podemos leer y responder en [Issues](https://github.com/sebasssz/sebams/issues).
-
-[Guía 2.0](extension/GUIA-2.0.md) · [Privacidad](extension/PRIVACY.md) · [Verificación](extension/VERIFY.md)
-
-El repositorio y los paquetes incluyen solo código, recursos y pruebas. No se publican credenciales, códigos de conexión, perfiles de navegador ni tareas personales.
+El repositorio y los paquetes contienen código, recursos y pruebas. No incluyen credenciales, códigos de conexión, perfiles de navegador ni datos personales. La configuración privada del correo se mantiene fuera del repositorio y de las descargas.

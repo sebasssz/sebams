@@ -171,8 +171,6 @@ The scripts create separate profiles and use `--enable-unsafe-extension-debuggin
 
 ## Remaining manual checks
 
-- A live Gemini response with the user's own free API key and selected model, including provider billing and account access. The API request format and image bytes were verified with a fake provider.
-- Installing/configuring the official Secure MCP Tunnel and connecting the tools to the user's ChatGPT account. Only local MCP transports and elicitation were tested.
 - The native Chrome consent dialog for local Bridge access. Headless tests checked permission grant/denial logic using fixtures.
 
 - Installation using the user's visible **Load unpacked** picker and Chrome's optional **Keep it** confirmation. Automated installation and the new-tab override passed in isolated profiles.
@@ -188,3 +186,7 @@ The in-app browser initially displayed a local preview, but a later attempt to r
 ## 2.0.1 Links and connection recovery
 
 The Links toolbar uses normal flow so Add, Options and Close have separate click targets, including at 320 px and after scrolling long folders. The row ellipsis opens editing; add/edit/pin/reorder/remove/Undo are exercised by browser-links-recovery.mjs (3 scenarios). browser-connection-recovery.mjs exercises the actual extension transport against isolated fixtures: JSON 401, HTML sign-in, network failures, incomplete pairing, reused/stale tabs, account mismatch and two-way task delivery and safe reload when updated files meet an old loaded manifest (7 scenarios). No personal task data is used.
+
+## 2.1 accounts, cloud photos and Groups
+
+80 extension unit checks and 22 server checks cover account isolation, single-use/expired/attempt-limited email codes, a mocked Brevo request contract, bounded bodies, independent sessions, cloud revisions and photo authorization, membership/leader permissions and task assignment. Seven two-device Chrome scenarios exercise email-code login with a fake sender, byte-preserving photo restoration, independent/conflicting edits and recovery, group creation/join, assignee-only completion, persisted membership, mobile layout and leader rename/delete/restore. No real emails were sent in automated tests. Live delivery requires configuring a verified sender and key. Native permission consent and real mailbox delivery remain manual checks.

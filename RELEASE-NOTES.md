@@ -1,7 +1,8 @@
-Sebams 2.0.1
+Sebams 2.1.0
 
-- Fix Links toolbar overlap: Add, Options and Close use separate targets in a stable header at desktop and mobile widths, including while scrolling. The row ellipsis opens link editing instead of being an inert reorder button.
-- Recover ChatGPT sync after a JSON 401 response, sign-in HTML, network failures or incomplete pairing. Verify tracked connection tabs before reuse so stale or recycled tabs cannot prevent synchronization. Account mismatch checks remain enforced and provider errors remain visible.
-- Detect pending Chrome reload after a file update. Settings offers Finish update and reload and blocks sending new profile data to an old background worker; this avoids the misleading unsupported-state-fields sync error. Existing local tasks, references, profiles and connection settings are preserved.
+- Email-code account UI and server with single-use expiring codes, rate/attempt limits and independent device sessions. Delivery remains disabled until the owner configures the verified Brevo sender and private server secrets.
+- Full personal sync: profiles, tasks/extras, notes, links, habits, settings, uploaded backgrounds and reference photos. Optimistic revisions, independent-change merging, explicit conflict choices and a previous local recovery copy. Device timer execution and private connection tokens stay local.
+- Groups in the Inbox/view dropdown and sidebar. Six-letter invitations, persistent membership, named assignees, dates/priorities, assignee-only completion and leader-only rename/member/delete/restore controls. Personal data is not shared with a group.
+- Preserve the existing ChatGPT connector; account switching pauses the old connection and disconnecting ChatGPT retains host access needed by an active Sebams account.
 
-Validation: 75 unit checks, 3 Links recovery scenarios, 7 connection transport/reload scenarios, 11 ChatGPT regressions and 6 Links/photo scenarios using isolated test data. Public release digests and updater install/backup are verified after publication.
+Checks: 80 extension unit tests, 22 server tests, 7 two-device/group Chrome scenarios, 11 ChatGPT regressions, 14 UI/profile regressions, TypeScript and production build. Real email delivery is pending private sender configuration.
